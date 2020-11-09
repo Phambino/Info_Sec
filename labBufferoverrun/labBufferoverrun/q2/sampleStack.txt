@@ -1,0 +1,34 @@
+	eax            0x1	1
+	ecx            0x0	0
+	edx            0xbffffcec	-1073742612
+	ebx            0x4015d154	1075171668
+	esp            0xbffffc70	0xbffffc70
+	ebp            0xbffffc78	0xbffffc78
+	esi            0x400168e4	1073834212
+	edi            0xbffffce4	-1073742620
+	eip            0x80484be	0x80484be
+	eflags         0x282	642
+	...
+
+	esp : top of stack pointer. For function calls.
+	ebp : current stack frame pointer
+		This pointer is used to reference local variables
+		in the current functions stack frame.
+		The stack frame for sumNums looks like
+
+      esp-> 0xbffffc30: 70 fc ff bf      c   c   c   c  (&c==-40%ebp)
+            0xbffffc34: b6 d2 00 40      c   c   c   c
+            0xbffffc38: ac 95 04 08      c   c   c   c
+            0xbffffc3c: 45 82 04 08      c   c   c   c
+            0xbffffc40: 64 21 03 40 
+            0xbffffc44: 54 d1 15 40
+            0xbffffc48: 00 00 00 00    sum sum sum sum  (&sum==-16(%ebp))
+            0xbffffc4c: 03 00 00 00      i   i   i   i  (&i==-12(%ebp))
+            0xbffffc50: 88 fc ff bf
+            0xbffffc54: 50 d4 00 40
+ebp->       0xbffffc58: 78 fc ff bf    sfp sfp sfp sfp  # saved frame pointer
+            0xbffffc5c: da 84 04 08    ret ret ret ret  # return address
+            0xbffffc60: 03 00 00 00      n   n   n   n   (&n==8(%ebp))
+            0xbffffc64: 07 00 00 00      m   m   m   m   (&m==12(%ebp))
+            0xbffffc68: 88 fc ff bf    
+            0xbffffc6c: 41 84 04 08

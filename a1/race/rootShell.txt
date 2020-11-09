@@ -1,0 +1,16 @@
+6) As hacker, explain how hacker exploits /questions/race/race
+   so that they end up with a root shell
+   
+   Hacker can use the above exploit to overwrite /etc/passwd or /etc/shadow and create a new user
+   which has uid=0;guid=0 which means is a root user. (hacker:x:0:0::/home:/bin/sh)
+
+
+How to do:
+    1. As hacker:
+        a. Do the same steps as modifyRoot.txt but to /etc/passwd
+        b. give ./race_old this input "hacker:x:0:0::/home:/bin/sh"
+        c. su hacker (same password as hacker user)
+        d. Now hacker is Root.
+
+OR Run the 2 scripts and change:
+    - 'Input to overwrite root file' in runAttack.sh to "hacker:x:0:0::/home:/bin/sh"

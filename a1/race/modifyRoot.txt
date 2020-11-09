@@ -1,0 +1,15 @@
+5) As hacker, explain how hacker exploits /questions/race/race
+   so that they modify the root only readable and writable file /etc/passwd2
+
+   Hacker runs race, race requests an input,
+   Hacker can then symlink permitted to any root only files and overwrite them with the input passed input.
+   Due to race condition between "facces" and "fopen".
+
+How to do it: 
+    1. As hacker:
+        a. run race_old, dont give it input yet
+        b. on another shell, link the permitted file with any root read and writeable only file
+        c. go back to race_old shell and give it input.
+        d. the root read and writeable only file should be overwritten
+
+OR use the 2 scripts included.

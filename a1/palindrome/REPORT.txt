@@ -1,0 +1,13 @@
+1. tcpclientA.pl feeds the server, strings of size 16 gradually increasing until a crash
+then prints how many 16 lined strings were required.
+
+2. tcpclientB.pl feeds the server, a shellcode of noops + shellcode + an address of size 65 * 16 
+it should require 1 input that gets ignored then you can start inserting command line input 
+as if this is a shell, and you are root.
+
+3. tcpclientC.pl passes %x and others as argument gradually increase and we can see how 
+addresses behave due to incorrect way of using printf in palindrome_bad.can
+
+4. fix can be found in palindrome.c 
+   a. modify the code such get getchar will loop at most 1024 times and on the last iteration set last index (1024) to be the null terminator.
+   b. fix printf to use printf("%s", var) instead of just printf(s)

@@ -1,0 +1,3 @@
+3) Explain what the setuid bit being set means for race, when run by hacker.
+    
+    This means that the program will run with root permissions.

@@ -1,0 +1,62 @@
+<html>
+	<body>
+		<h1> Example: printf format string vulnerability </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+The printf format string vulnerability arises when the user
+provides a string that is used as the format string argument
+to printf(fmt, args); 
+</xmp>
+			</li>
+			<li> Example code etc.:
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+When the system requests:
+
+	Input name:
+
+The user provides input:
+
+	Arn %x ld
+	
+The system responds with (for example):
+
+	Hi Arn bfff23 ld
+
+If there was no printf vulnerability, we would expect:
+
+	Hi Arn %x ld
+
+The difference is that the %x appears to be replaced with a
+hex value (bfff23) in the above example, indicating that a printf format string
+is derived directly from the users input at "Input name:"
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

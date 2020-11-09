@@ -1,0 +1,82 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A2: SESSION FIXATION </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+	A Session fixation vulernability is when authentication and session information is not
+	implemented correctly therefore allowing attackers to gain access to another user's 
+	identity or gain personal information for exploitation.
+</xmp>
+			</li>
+			<li> Example code etc.:
+<xmp>
+	elseif($operation == "logout"){
+		unset($_SESSION);
+		$_SESSION['isLoggedIn']=False;
+	}
+</xmp>
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+	Seeing that when a user is logged out, if an attacker goes on developer tools and checks the cookie,
+	and realizes that the same cookie is being used, the attacker can identify that the page is vulernable.
+	Therefore, an attacker can use that same cookie to reload any pages that has been previously logged in
+	to obtain data from another user.
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+	This goes under confidentiality as information from another user is being disclosed to 
+	unauthorized parties as an attacker can log into a victims account.
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+Log into a user or anysort for example:
+	username=perl, password=perl
+	
+Then logout of the account
+From the URL you should see:
+	http://192.168.10.100/fourFours/index.php?operation=logout
+	
+By erasing the operation=logout from the URL and reloading the page, we can see that
+the last user that was logged in will still be logged in. Therefore not truely being
+logged out.
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+From:
+	unset($_SESSION);
+	$_SESSION['isLoggedIn']=False;
+
+We change:
+	$old = session_id();
+	session_regenerate_id();
+	unset($old);
+	$_SESSION['isLoggedIn']=False;
+	
+	Regenerate session id after logout and delete old one
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+What session_regenerate_id() does is that it replaces the current session id with a new one
+while keeping current session info. When logging out, the session cookie will change therefore
+making it so that it act as a new user that as approached the page. The attacker cannot load any
+previous information from previously logged in pages because after logout, the page acts as a new user
+has logged in.
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

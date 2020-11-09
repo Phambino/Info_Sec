@@ -1,0 +1,106 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A4: INSECURE DIRECT OBJECT REFERENCES </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+	An INSECURE DIRECT OBJECT REFERENCES vulerability is when a reference is exposed to an internal
+	implementation object, such as a file, directory, or database key. Without an access control check
+	or other protection, attackers can manipulate these references to access unauthorized data.
+</xmp>	
+			</li>
+			<li> Example code etc.:
+<xmp>
+	elseif($operation == "deleteExpression"){
+		$expressionId = $_REQUEST['expressionId'];
+		$accountId=$_REQUEST['accountId'];
+		$dbconn = pg_connect_db();
+		$result = pg_prepare($dbconn, "", "DELETE FROM solution WHERE id=$expressionId AND accountId=$accountId");
+		$result = pg_execute($dbconn, "", array());
+	} elseif($operation == "addExpression"){
+		$expression = $_REQUEST['expression'];
+		$value=$_REQUEST['value'];
+		$accountId=$_REQUEST['accountId'];
+		...
+	}
+	
+	The issue lies in the $accountId=$_REQUEST['accountId']; in both add expression and delete expression
+</xmp>
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+	Suppose an attacker has infiltrated the page or is already a user. Once an attacker has added their own
+	expression and deleted it, they can see that the URL has variables that indicate the userid and the 
+	expressionid. 
+	
+		http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId={num1}&accountId={num2}
+		
+	After adding and deleting multiple of their own expressions, the attacker realizes that the accountid doesn't change
+	obviously and the expressionid increments as each expression is being added. Using this information, the attacker can
+	modify the URL to and directly change the numbers from the URL. Given the following pattern, when the attacker adds an
+	expression and is able to delete the expression through the URL. The attacker now knows that the page is vulnerable.
+	The attacker can use the URL to find out that he/she has the power to delete another user's expressions.
+	
+	Similar to delete, if an attacker knows the format of the URL for adding expression, then the attacker can add
+	random expression for another user.
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+This violates Integrity as expressions from an attacker is being changed from storage by an unauthorized party.
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+When logged in to a user:
+
+	Add an entry
+	Then delete the entry that you just added
+	
+In the URL, you can see:
+
+	http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId={num1}&accountId={num2}
+	For example we can use
+	http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId=23&accountId=10
+	
+From the URL, we can see the Id of the expression and the id of the account. We can infer that since there are
+id's up to 23 and 10, that there must be id's that exists lower, let's say expressionId=6 and accountId=8, then the numbers shown. 
+Therefore from the URL, if we change it to be:
+
+	http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId=2&accountId=8
+
+By manually putting values into expressionId and accountId and refreshing the page, we can delete another person's entry
+indicating that there is a vulernability in Object References.
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+The line:
+	$accountId=$_REQUEST['accountId'];
+
+is changed to:
+	$accountId=$_SESSION['accountId'];
+	
+for both delete and add expression
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+When we log in, whoever has logged in has their infomation stored in the session cookie.
+From the query, the delete requires the expressionId and accountID. By taking the
+accountId from the session cookie, we can surely verify the person on the account vs simply
+from the request in the URL and match the query correctly in order to delete entries that they
+own. Therefore an attacker cannot use the URL to delete/add expressions
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

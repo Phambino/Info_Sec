@@ -1,0 +1,187 @@
+Everything in this lab takes place inside the RH72 VM.
+
+Q1) Compile and gdb stack.c. Put a breakpoint at sum=0; and run the code.
+
+	JUST A REMINDER
+	gcc -o stack -g stack.c
+	gdb stack
+
+	GDB COMMANDS BELOW
+	break 86 # your break point may differ
+	run
+
+Q2) What's the difference between gdb commands step and stepi?
+    
+	step executes the next source code instruction
+	stepi executes the next machine instruction
+
+Q3) For the sumNums function call. 
+    Note: One problem with this question is what do we mean by initialized.
+    My intention was initialized during declaration. If a variable is not
+    initialized during declaration, it is possible for it to be read
+    while holding some random value. 
+    We will take any reasonable answer.
+
+    Which local variables on the stack are initialized? 
+
+	n,m,sum
+
+    Which local variables on the stack are not initialized?
+
+	i,c
+
+	we initialize it ourselves soon after declaration
+
+    Where did those values come from?
+
+	arbitrary values in memory, could be from previous stack frames
+
+    Why is this a potential issue for a C program?
+
+	unpredictable behaviour if we read the uninitialized values 
+	see for example uninitializedStack.c
+
+Q4) Step through the code until you reach return sum; 
+    Do this by ...
+step
+x/24w $esp 
+step
+x/24w $esp 
+step
+x/24w $esp 
+step
+x/24w $esp 
+...
+
+    Draw a picture of the stack, right before you leave sumNums (before return sum; is executed).
+    It should be similar to the picture in stack.c, with the addresses and values modified to correspond
+    with the execution of your code.
+
+
+Displayed in increasing byte order from left to right, top to bottom.
+This is as it 'appears in memory'. This is what I was hoping you would submit.
+
+eax 0x7
+ebp 0xbffffc68
+eip 0x80484a0
+esp 0xbffffc40
+
+      esp-> 0xbffffc40: 41 41 41 41	c c c c
+            0xbffffc44: b6 d2 00 40	c c c c
+            0xbffffc48: ac 95 04 08	c c c c
+            0xbffffc4c: 45 82 04 08	c c c c
+            0xbffffc50: 64 21 03 40
+            0xbffffc54: 54 d1 15 40
+            0xbffffc58: 12 00 00 00	sum sum sum sum
+            0xbffffc5c: 07 00 00 00	i i i i 
+            0xbffffc60: 98 fc ff bf
+            0xbffffc64: 50 d4 00 40
+ebp->       0xbffffc68: 88 fc ff bf	sfp sfp sfp sfp
+            0xbffffc6c: da 84 04 08	ret ret ret ret
+            0xbffffc70: 03 00 00 00	n n n n  
+            0xbffffc74: 07 00 00 00	m m m m 
+            0xbffffc78: 98 fc ff bf
+            0xbffffc7c: 41 84 04 08
+
+Displayed as values, interpreted little endian.
+
+esp->	0xbffffc40:	0x41414141	c c c c
+			0x4000d2b6	c c c c
+			0x080495ac	c c c c
+			0x08048245	c c c c
+	0xbffffc50:	0x40032164	
+			0x4015d154	
+			0x00000012	sum sum sum sum 
+			0x00000007	i i i i 
+	0xbffffc60:	0xbffffc98	
+			0x4000d450	
+ebp->			0xbffffc88	sfp sfp sfp sfp
+			0x080484da	ret ret ret ret
+	0xbffffc70:	0x00000003	n n n n 
+			0x00000007	m m m m 
+			0xbffffc98	
+			0x08048441	
+
+Q5) Fix the code below so that, when executed, hacked is run upon return
+    from sumNums.
+
+int sumNums(int n, int m){
+	int i;
+	int sum=0;
+	char c[16];
+	i=n;
+	while(i<m){
+		sum=sum+i;
+		i=i+1;
+	}
+	/**
+	 Q: How do I know 44, 45, 46, 47?
+	 A: Take a look at &c[0] and compare 
+	    with where the ret ret ret ret is.
+	    It is 11 lines below, so 11*4 bytes/line = 44 bytes.
+
+	 Q: How do I know 0xb0, 0x84, 0x04, 0x08?
+	 A: in gdb, print &hacked
+
+	 Q: But this prints the above in reverse order...
+	    (gdb) print &hacked
+	    $4 = (void (*)()) 0x80484b0 <hacked>
+	 A: Yes, but x86 is little endian, so low order byte
+	    goes first.
+	**/
+		
+	c[44]=0xb0; 
+	c[45]=0x84; 
+	c[46]=0x04;
+	c[47]=0x08;
+
+	return sum;
+}
+
+Q6) Which part of stack.c does the following bit of stack.s
+    correspond to? Explain the correspondence line by line...
+
+-----------------------------------------------------------
+EXTRACT FROM stack.s
+-----------------------------------------------------------
+sumNums:                                     PLACE LINES OF stack.c BELOW
+     ...
+                                             -12(%ebp) is i
+                                              12(%ebp) is m
+                                             -16(%ebp) is sum
+
+	                                     while(i<m) 
+.L3:                                         
+	movl	-12(%ebp), %eax                 eax=i
+	cmpl	12(%ebp), %eax                  compare eax and m
+	jl	.L5                             if( < ) jump to L5 (loop body)
+	jmp	.L4                             else jump to L4 (out of loop)
+	.p2align 2
+.L5:                                         {
+                                                 sum = sum + i;
+	movl	-12(%ebp), %eax                  eax=i
+	leal	-16(%ebp), %edx                  edx=&sum
+	addl	%eax, (%edx)                     *edx=*edx+eax
+
+                                                 i = i + 1;
+	leal	-12(%ebp), %eax                  eax=&i
+	incl	(%eax)                           *eax++
+
+	jmp	.L3                          } end of loop body, restart loop
+     ...
+
+-----------------------------------------------------------
+EXTRACT FROM stack.c
+-----------------------------------------------------------
+int sumNums(int n, int m){
+	int i;
+	int sum=0;
+	char c[16];
+	i=n;
+	while(i<m){
+		sum=sum+i;
+		i=i+1;
+	}
+	return sum;
+}
+

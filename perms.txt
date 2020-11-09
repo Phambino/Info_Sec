@@ -1,0 +1,47 @@
+1. 1004 
+2. 1006
+3. sudo, admin
+4. /etc/group
+5. -rw-r--r--
+6. 0022
+7. 0
+8. 42
+9. find /T4/Haystack -user csc347
+10. find /T4/Haystack -group root
+11. find /T4/Haystack -perm 777
+12. sudo find /T4/Haystack -perm 777 -exec chmod 750 {} \;
+13. sudo find /home/student -name bottom* -exec chmod 664 {} \; 
+14. find /home/student/top/middle_three/ -name foo.txt -exec chmod +x {} \;
+15. elevated
+16. elevated
+17. sudo find / -user root -perm -4000 -exec ls -ldb {} \;
+18.
+-rwsr-xr-- 1 root dhcp 2960 2008-04-02 09:38 /lib/dhcp3-client/call-dhclient-script
+-rwsr-xr-x 1 root root 168340 2008-05-14 10:35 /usr/lib/openssh/ssh-keysign
+-rwsr-xr-x 1 root root 4588 2008-08-22 19:10 /usr/lib/eject/dmcrypt-get-device
+-rwsr-xr-x 1 root root 9624 2012-12-15 14:01 /usr/lib/pt_chown
+-rwsr-xr-- 1 root www-data 10276 2009-06-18 04:53 /usr/lib/apache2/suexec
+-rwsr-xr-x 1 root root 9464 2008-01-24 09:30 /usr/sbin/sensible-mda
+-rwsr-xr-- 1 root dip 269256 2007-10-04 15:57 /usr/sbin/pppd
+-rwsr-xr-x 2 root root 107936 2009-02-16 22:17 /usr/bin/sudoedit
+-rwsr-xr-x 1 root root 12296 2007-12-10 12:33 /usr/bin/traceroute6.iputils
+-rwsr-xr-x 1 root root 46084 2008-03-31 00:32 /usr/bin/mtr
+-rwsr-xr-x 1 root root 37360 2008-12-08 04:14 /usr/bin/gpasswd
+-rwsr-sr-x 1 root mail 72316 2007-03-27 14:35 /usr/bin/procmail
+-rwsr-xr-x 1 root root 28624 2008-12-08 04:14 /usr/bin/chfn
+-rwsr-xr-x 1 root root 23952 2008-12-08 04:14 /usr/bin/chsh
+-rwsr-xr-x 1 root root 19144 2008-12-08 04:14 /usr/bin/newgrp
+-rwsr-xr-x 1 root root 11048 2007-12-10 12:33 /usr/bin/arping
+-rwsr-xr-x 1 root root 29104 2008-12-08 04:14 /usr/bin/passwd
+-rwsr-xr-x 2 root root 107936 2009-02-16 22:17 /usr/bin/sudo
+find: /proc/6314/task/6314/fd/4: No such file or directory
+find: /proc/6314/task/6314/fdinfo/4: No such file or directory
+find: /proc/6314/fd/4: No such file or directory
+find: /proc/6314/fdinfo/4: No such file or directory
+-rwsr-xr-- 1 root fuse 20056 2008-02-26 13:25 /bin/fusermount
+-rwsr-xr-x 1 root root 63584 2008-09-26 08:43 /bin/umount
+-rwsr-xr-x 1 root root 26684 2007-12-10 12:33 /bin/ping6
+-rwsr-xr-x 1 root root 30856 2007-12-10 12:33 /bin/ping
+-rwsr-xr-x 1 root root 81368 2008-09-26 08:43 /bin/mount
+-rwsr-xr-x 1 root root 25540 2008-12-08 04:14 /bin/su
+19. 24

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ `whoami` != 'root' ] 
+then 
+	echo "You must be root to do this.";
+	exit 
+fi
+
+gcc -o fetchFile fetchFile.c
+chown root fetchFile
+chgrp root fetchFile
+chmod +s fetchFile
+

@@ -1,0 +1,223 @@
+<html>
+	<body>
+		<h1> # FIX OWASP A6: SENSITIVE DATA EXPOSURE </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+A Sensitive Data Exposure vulnerability is when an page or database does not protect very personal/sensitive
+data when being stored. This includes passwords, credit card numbers, tax ID's etc. Given that the data is
+poorly stored with no protection, an attacker can easily steal this information and commit fraud. Using a 
+site that does not use SSL can also cause an attacker to steal a session cookie therefore causing information
+being stolen.
+</xmp>
+			</li>
+			<li> Example code etc.:
+<xmp>
+ id |       username        |     passwd     | firstname |  lastname   
+----+-----------------------+----------------+-----------+-------------
+  1 | bigBoy                | sdfdsfd        | Alex      | Large
+  2 | anne                  | lion           | Anne      | Lion
+  3 | lindah20              | fourfivesix    | Linda     | Swim
+  4 | coins                 | silverisbetter | Abagail   | Silver
+  5 | matchstick            | password1      | Jessie    | Burn
+  6 | coffee                | password       | Annie     | Cup
+  7 | ssll                  | passw0rd       | Diane     | Bassell
+  8 | cliff                 | cliff          | Steve     | Mountain
+  9 | arnold@cs.toronto.edu | sdxfdsgger     | Arnold    | Rosenbloom
+ 10 | perl                  | perl           | Jay       | Perlmuter
+ 11 | pickApeck             | Peter          | Peter     | Piper
+ 12 | hotel                 | jbh            | Jen       | Binghampton
+ 13 | dk@gmail.com          | esrever        | David     | Kleinman
+ 14 | eightball@gmail.com   | badPassword    | Jesse     | Kowalski
+ 15 | ivanna                | grant          | Ivanna    | Grant
+
+ id |           email            |     password      | firstname |   lastname   
+----+----------------------------+-------------------+-----------+--------------
+  1 | alex.grand@gmail.com       | sjdfdsff          | Alexander | Grand
+  2 | noemail@gmail.com          | potato            | Anne      | Lion
+  3 | linda.bay@gmail.com        | one1Two2Three3    | Linda     | Bay
+  4 | aaron.silver@gmail.com     | ouattwtlp         | Aaron     | Silver
+  5 | jess.burn@yahoo.com        | password          | Jessica   | Burn
+  6 | annie@cs.michigan.edu      | government        | Annie     | Satch
+  7 | caramel001@tdsb.on.gov     | passw0rd          | Dane      | Bassell
+  8 | sassk23@yahoo.com          | sassk23@yahoo.com | Stephanie | Kimbers
+  9 | arnold@cs.toronto.edu      | qwertyasdfgh      | Arnold    | Rosenbloom
+ 10 | putter@starsupport.com     | putter            | Joyce     | Puter
+ 11 | lindsay@lpeter.com         | Peter             | Lidija    | Peter
+ 12 | japters@hp.com             | jr                | Jennifer  | Ramachandran
+ 13 | mariod@coke.ca             | snoopy            | Davica    | Marius
+ 14 | eightball@poolsharks.com   | badPassword       | Jesse     | Kowalski
+ 15 | ivanna.trump@microsoft.com | m1ll10naire       | Ivanna    | Grant
+
+</xmp>
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+Suppose an attacker can potentially see the database and/or has access to runnable code, if an attacker
+goes through the table listed above, they can easily steal the passwords and login as a different user going through
+their private data.
+
+Similarly, if the attacker has access to the server, then the attacker can call queries from the code to call the database
+and extract data from there.
+
+	$query= "SELECT passwd FROM account";
+    $result = pg_prepare($dbconn, "", $query);
+    $result = pg_execute($dbconn, "", array());
+
+Also if an attacker goes on the page and sees that it is not verified by an SSL, the attacker can monitor network traffic
+and steal a user's cookie. Then use that cookie to steal a user's session and access their private information.
+
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+This vulnerability goes under Confidentiality as information from the database is being stolen and the attacker
+can use that information to access more private user information.
+This also goes under authenication since if there is no signed SSL, then an attacker can listen into user traffic
+and decrypt any input from a user.
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+Suppose an attacker has access to database:
+	run query "select * from account";
+	
+You can see the all the account information including passwords and then use that password to login into the page
+
+When accessing a page, you can look at the topleft and see the lock symbol next the URL, and see that the page 
+is not protected by an SSL and that the site is not secure.
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+	$salt = "as7io4c923k40";
+	hashup($salt);
+	function hashup($salt) {
+		$dbconn = pg_connect_db();
+		@$q1 = "ALTER TABLE account ADD h varchar(255)";
+		@$r = pg_prepare($dbconn, "", $q1);
+		@$r = pg_execute($dbconn, "", array());
+		if ($r != NULL) {
+			$query= "SELECT passwd FROM account";
+			$result = pg_prepare($dbconn, "", $query);
+			$result = pg_execute($dbconn, "", array());
+			if($row = pg_fetch_all_columns($result)) {
+				foreach($row as $val) {
+					$hashpass = md5($salt.$val);
+					$q2 = "UPDATE account SET passwd='$hashpass' WHERE passwd='$val'";
+					$r2 = pg_prepare($dbconn, "", $q2);
+					$r2 = pg_execute($dbconn, "", array());
+				}
+			}
+		}
+
+
+		@$q3 = "ALTER TABLE fourfoursuser ADD passwd varchar(255)";
+		@$r3 = pg_prepare($dbconn, "", $q3);
+		@$r3 = pg_execute($dbconn, "", array());
+		if ($r3 != NULL) {
+			$q4= "SELECT password FROM fourfoursuser";
+			$r4 = pg_prepare($dbconn, "", $q4);
+			$r4 = pg_execute($dbconn, "", array());
+			if($row2 = pg_fetch_all_columns($r4)) {
+				foreach($row2 as $val2) {
+					$hashpass2 = md5($salt.$val2);
+					$q5 = "UPDATE fourfoursuser SET passwd='$hashpass2' WHERE password='$val2'";
+					$r5 = pg_prepare($dbconn, "", $q5);
+					$r5 = pg_execute($dbconn, "", array());
+				}
+			}
+			@$q6 = "ALTER TABLE fourfoursuser DROP COLUMN password";
+			@$r6 = pg_prepare($dbconn, "", $q6);
+			@$r6 = pg_execute($dbconn, "", array());
+		}
+	}
+
+	
+	Write a hashing function that salts and hashes the passwords in the database for account table
+	and fourfouruser table.
+	
+	
+	if($operation == "login"){
+		$user=$_REQUEST['user'];
+		$password=$_REQUEST['password'];
+		$password=md5($password);
+		
+	Checks the hash of the password with the hash of the account table in database to verify user
+	
+	Use this line to create an Apache self signed certificate for your site and you should be in /etc/ssl/certs/
+	when creating this certificate and key:
+		openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mysitename.key -out mysitename.crt
+		
+	Then in /etc/Apache2/httpd.conf:
+		SSLEngine on
+		SSLCertificateFile /etc/ssl/certs/mysitename.crt
+		SSLCertificateKeyFile /etc/ssl/certs/mysitename.key
+		
+	https://www.ssls.com/knowledgebase/how-to-install-an-ssl-certificate-on-apache/ used as reference
+		
+	Then restart your apache web server to install the self signed certificate
+	
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+Suppose there contains a database that contains passwords unhashed. When a user accesses the page, the
+the function hashup() runs immediately and hashes all the passwords in the accounts. And when a user logs in,
+the password they submit gets hashed and get compared with the hash of the one in the database and if they match,
+then the user logs in. An attacker that has access to the database cannot explicity find out a user's password 
+and the attacker that runs queries will also run into the hashed passwords therefore unable to login to another user
+and steal their information.
+
+ id |           email            | firstname |   lastname   |              passwd              
+----+----------------------------+-----------+--------------+----------------------------------
+ 10 | putter@starsupport.com     | Joyce     | Puter        | c6c208bc5982936664074fa700da348c
+ 11 | lindsay@lpeter.com         | Lidija    | Peter        | 6fa95b1427af77b3d769ae9cb853382f
+ 12 | japters@hp.com             | Jennifer  | Ramachandran | d5de679d452cb429e6f55e64a9988cbf
+ 13 | mariod@coke.ca             | Davica    | Marius       | e9646d086a37906e5bec4323d3b37c9b
+ 14 | eightball@poolsharks.com   | Jesse     | Kowalski     | 5d2c942a1b858e6c92771489f49ceb4c
+ 15 | ivanna.trump@microsoft.com | Ivanna    | Grant        | cdcc06d2434eaa2458fae543dbeabb9a
+  2 | noemail@gmail.com          | Anne      | Lion         | 8ee2027983915ec78acc45027d874316
+  1 | alex.grand@gmail.com       | Alexander | Grand        | 652b1b13884682e7846a99034a5e24ef
+  3 | linda.bay@gmail.com        | Linda     | Bay          | 75686b9eb0689386fd74be862d908895
+  4 | aaron.silver@gmail.com     | Aaron     | Silver       | 6397ac589c6e7bbd16e018d35944a7d2
+  5 | jess.burn@yahoo.com        | Jessica   | Burn         | 5f4dcc3b5aa765d61d8327deb882cf99
+  6 | annie@cs.michigan.edu      | Annie     | Satch        | 30618461f5ff731e12c61bae54582b80
+  7 | caramel001@tdsb.on.gov     | Dane      | Bassell      | bed128365216c019988915ed3add75fb
+  8 | sassk23@yahoo.com          | Stephanie | Kimbers      | 16f3848e3a372872db0a0f913da27548
+  9 | arnold@cs.toronto.edu      | Arnold    | Rosenbloom   | 35c7d5d9f4675c2d94f3ccca277252dd
+
+ id |       username        |              passwd              | firstname |  lastname   | h 
+----+-----------------------+----------------------------------+-----------+-------------+---
+  1 | bigBoy                | 7bafb2e4eeefe2b09c302e63326673fe | Alex      | Large       | 
+  2 | anne                  | 6b42d00c4ca6ddc33a604c54b8ce4adc | Anne      | Lion        | 
+  3 | lindah20              | 2e14668a2fbf20d3f3ceb9296eb9e1c8 | Linda     | Swim        | 
+  4 | coins                 | 5d627e53ba15f7b80ad78703766e2c9e | Abagail   | Silver      | 
+  5 | matchstick            | 7c6a180b36896a0a8c02787eeafb0e4c | Jessie    | Burn        | 
+  6 | coffee                | 5f4dcc3b5aa765d61d8327deb882cf99 | Annie     | Cup         | 
+  7 | ssll                  | bed128365216c019988915ed3add75fb | Diane     | Bassell     | 
+  8 | cliff                 | 9e94e929e22a6c121307febc79ea549c | Steve     | Mountain    | 
+  9 | arnold@cs.toronto.edu | 2ef45cf2419f4977b773000d655fa061 | Arnold    | Rosenbloom  | 
+ 10 | perl                  | f83a0aa1f9ca0f7dd5994445ba7d9e80 | Jay       | Perlmuter   | 
+ 11 | pickApeck             | 6fa95b1427af77b3d769ae9cb853382f | Peter     | Piper       | 
+ 12 | hotel                 | bdac8cd786a0e73e1796320adb9afd75 | Jen       | Binghampton | 
+ 13 | dk@gmail.com          | 510fb5f8fb3b04254c5733cc7bb6cbc2 | David     | Kleinman    | 
+ 14 | eightball@gmail.com   | 5d2c942a1b858e6c92771489f49ceb4c | Jesse     | Kowalski    | 
+ 15 | ivanna                | 64fad28965d003cde964ea3016e257a3 | Ivanna    | Grant       | 
+
+
+For SSL, generally you would have to pay for an SSL Certificate in order to protect your site, but in our case, we can
+use a self signed SSL to weakly protect our site from an attackers that can listen in on user traffic.
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

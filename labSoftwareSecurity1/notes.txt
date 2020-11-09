@@ -1,0 +1,11 @@
+To build fetchFile: 
+	1) Launch a new terminal
+	2) su - # to become root in the new terminal
+	3) cd to the location of the tutorial
+	4) execute buildFetchFile
+
+To build integerOverflow:
+	make integerOverflow
+
+To build integerOverflowFIX:
+	make integerOverflowFIX

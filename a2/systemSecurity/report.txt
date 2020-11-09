@@ -1,0 +1,179 @@
+1) [2 Marks]
+	Command to init the database: /usr/sbin/tripwire --init 
+	Command to run a check:	/usr/sbin/tripwire --check 
+	Command to get a report: /var/lib/tripwire/report/ubuntu804Server-20201027-035853.twr
+	Place the report in twreport1.txt
+
+2a) [5 Marks] Document the steps you took to 'take the drive out of the Ubuntu804_owasp VM and place it in the Kali VM'. 
+	1) First shutdown the Ubuntu804_owasp vm.
+	2) Remove Ubuntu804_owasp vm from the vmware library.
+	3) Shutdown Kali-Linux-2020.3-vmware-amd64.
+	4) Go to Kali-Linux-2020.3-vmware-amd64 and press edit virtual machine settings
+	5) Press add and add a hard disk
+	6) Locate where you have Ubuntu804_owasp vm stored and add it to Kali-Linux-2020.3-vmware-amd64.
+	7) Use existing format and complete moving.
+	8) Power up Kali-Linux-2020.3-vmware-amd64
+	9) On the desktop, you should see another hard disk called 8.2 volume and click on it
+	10) It asks to authenticate and it is the password of your kali password.
+	...
+
+2b) [3 Marks] Copy the shadow file to the Kali VM and see if you 
+    can determine some of the passwords using John the ripper. 
+	
+	When running John the ripper on shadow
+	
+	Warning: detected hash type "md5crypt", but the string is also recognized as "md5crypt-long"
+	Use the "--format=md5crypt-long" option to force loading these as that type instead
+	Using default input encoding: UTF-8
+	Loaded 5 password hashes with 5 different salts (md5crypt, crypt(3) $1$ (and variants) [MD5 128/128 AVX 4x3])
+	Remaining 3 password hashes with 3 different salts
+	Will run 8 OpenMP threads
+	Proceeding with single, rules:Single
+	Press 'q' or Ctrl-C to abort, almost any other key for status
+	Almost done: Processing the remaining buffered candidate passwords, if any.
+	Warning: Only 93 candidates buffered for the current salt, minimum 96 needed for performance.
+	Warning: Only 42 candidates buffered for the current salt, minimum 96 needed for performance.
+	Warning: Only 34 candidates buffered for the current salt, minimum 96 needed for performance.
+	Proceeding with wordlist:/usr/share/john/password.lst, rules:Wordlist
+	Proceeding with incremental:ASCII
+	0g 0:00:00:40  3/3 0g/s 62636p/s 187492c/s 187492C/s 19mp66..143jdw
+	0g 0:00:00:42  3/3 0g/s 62840p/s 188126c/s 188126C/s drewei..drubia
+	0g 0:00:00:43  3/3 0g/s 62820p/s 188074c/s 188074C/s latelli..lathiah
+	0g 0:00:03:36  3/3 0g/s 66311p/s 198857c/s 198857C/s 14118015..14171220
+	0g 0:00:03:39  3/3 0g/s 66262p/s 198712c/s 198712C/s brn2487..bensh13
+	0g 0:00:06:14  3/3 0g/s 66956p/s 200821c/s 200821C/s asdardil..asdelifi
+	0g 0:00:06:43  3/3 0g/s 66797p/s 200348c/s 200348C/s htch90..htca1.
+	0g 0:00:09:23  3/3 0g/s 67275p/s 201795c/s 201795C/s 10575547..10578879
+	0g 0:00:18:54  3/3 0g/s 68178p/s 204520c/s 204520C/s acm2115..acm2326
+	0g 0:00:18:55  3/3 0g/s 68175p/s 204511c/s 204511C/s acoulay..acouc05
+	0g 0:00:26:43  3/3 0g/s 67459p/s 202368c/s 202368C/s wheit..whay5
+	0g 0:00:26:44  3/3 0g/s 67460p/s 202369c/s 202369C/s wrccu..wrkaz
+	0g 0:00:26:46  3/3 0g/s 67460p/s 202371c/s 202371C/s wbebj..wbewz
+	0g 0:00:26:48  3/3 0g/s 67462p/s 202375c/s 202375C/s spichati..spicom08
+
+	Running john shadow --show
+	
+	arnold:password:16861:0:99999:7:::
+	joe:joeeoj:16735:0:99999:7:::
+
+	2 password hashes cracked, 3 left
+
+2c) [2 Marks] Modify user sid so that they are now a root user with password 'password'. 
+
+	1) cd into /etc/ in the Ubuntu804_owasp in Kali
+	2) sudo bash 
+	3) modify shadow file so that sid has the same password as arnold:
+
+		arnold:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16861:0:99999:7:::
+		
+		copy $1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe. so that it is the same for sid
+
+		sid:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16735:0:99999:7:::
+
+	4) modify passwd file so that it has same permissions as root:
+		
+		root:x:0:0:root:/root:/bin/bash
+
+		copy the :0:0: from root and match it for sid
+
+		sid:x:0:0::/home/sid:/bin/bash
+
+	5) Save and when the Ubuntu804_owasp boots up again, login as sid and password is password
+	sid should have root access now.
+
+2d) NOTHING TO REPORT HERE
+
+3a) [2 Marks] Place the result of running tripwire in twreport2.txt. 
+	Identify anything interesting below.
+	
+		-------------------------------------------------------------------------------
+		Rule Name: Security Control (/etc/passwd)
+		Severity Level: 66
+		-------------------------------------------------------------------------------
+
+		Modified:
+		"/etc/passwd"
+
+		-------------------------------------------------------------------------------
+		Rule Name: Security Control (/etc/shadow)
+		Severity Level: 66
+		-------------------------------------------------------------------------------
+
+		Modified:
+		"/etc/shadow"
+
+		-------------------------------------------------------------------------------
+		Rule Name: Root file-system executables (/bin)
+		Severity Level: 100
+		-------------------------------------------------------------------------------
+
+		Modified:
+		"/bin/cat"
+		"/bin/ps"
+		
+		These the files we files we modified on the server both online and offline. Therefore tripwire can detect
+		these potential compromises.
+
+
+3b) [4 Marks] 
+	last # this is a command
+
+		This command can tell you if an attacker has logged in, how long he has logged in for, the date of login, 
+		and ip of login.
+		
+		This means that if there is possible compromise, one of the recently logged in users is the one
+		responsible for the compromise.
+
+	uptime # this is a command
+
+		This command shows the amount of users on a server. If you are expecting a certain amount of users
+		on a system and it it surpasses that amount, it could possible mean that someone may be trying to 
+		compromise your server.
+
+	/var/log/* # these are log files
+
+		In auth.log:
+			We can see which users has logged into the server showing 
+			Oct 31 19:35:31 ubuntu804Server sshd[5853]: pam_unix(sshd:session): session opened for user sid by sid(uid=0)
+			which indicated date, user, and uid of the user. If you are expecting an unknown user like sid to not 
+			have uid=0, then the server has been compromised.
+			
+		In user.log:
+			It shows the date of when tripwire has been initialized and checked. If an attacker knows about the tripwire,
+			then the attacker can reinitalize tripwire so that the check does not detect any compromise. Therefore you should
+			remember when you initialized tripwire so that when you check user.log, the time should match and if it doesn't
+			then there is a possible compromise.
+	
+	.bash_history # what is this, whos should you look at and why are you looking?
+
+		.bash_history shows commands that the user has inputted into the terminal. Given that you are logged into sysadmin,
+		then you can go into /home/ and choose a specific users home directory and check their .bash_history. If another 
+		user's .bash_history is modifying admin files or running unauthorized programs/scripts/files, then that user is
+		trying to compromise the server.
+
+
+4) [2 Marks] List updates to policy below. 
+	1) Have a password to protect the BIOS.
+	2) Locking User Accounts After Login Failures
+	3) Monitor Suspicious Log Messages With Logwatch / Logcheck
+	4) Make Sure No Non-Root Accounts Have UID Set To 0
+	6) System Accounting with auditd
+	7) Backups
+	8) Keep Linux Kernel and Software Up to Date
+	9) Linux User Accounts and Strong Password Policy
+	10) Set Up Password Aging For Linux Users For Better Security
+
+5) [2 Marks] Report on what the attacker could have done to leave fewer traces than they did in this attack. 
+	What would you do to detect a compromise even in this case? 
+	
+	1)Overwrite tripwire so that tripwire does not detect any compromises.
+		Rerun tripwire --init
+	2)Overwrite .bash_history so that there is nothing suspicious going on.
+	3)Do not login an unnecessary amount of times
+	4)Overwrite auth.log so that the sysadmin cannot see who logged in recently
+	5)Overwrite user.log for tripwire
+	
+	You have to rely on linux commands to check for suspicious activty because an attacker with root access
+	can modify any file that checks compromises and logs it.
+	
+	

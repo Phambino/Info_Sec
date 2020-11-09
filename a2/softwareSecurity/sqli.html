@@ -1,0 +1,86 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A1: SQL Injection, use prepared statements </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+	An SQL Injection vulnerability happens when untrusted data is sent to a query 
+	and trick the interpreter to execute commands no intended to access data without authorization.
+</xmp>
+			</li>
+			<li> Example code etc.:
+<xmp>
+	if($operation == "login"){
+		...
+		$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";
+		$result = pg_prepare($dbconn, "", $query);
+		$result = pg_execute($dbconn, "", array());
+		...
+	}
+</xmp>
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+	On the login page, there is a username box and a passwords box and assuming that an attacker knows a user's username
+	Username: bigBoy
+	Password: {Unknown from the attacker}
+	
+	An attacker can submit a query in the passwords box to see if there is any pg_query issues that happen
+	Since the query is specifically setting the username and password from the requests, the attacker can
+	use that to submit their own query into the password box and cause an unauthorized query that can make the
+	password box return true therefore logging into the user without actually putting in the user's password.
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+	This issue goes under Confidentiality as information from the user is now being disclosed to unauthorized parties, 
+	and goes under accountability as there are no logs about what has been put into the password and username boxes.
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+	On the login page, suppose we have a username bigBoy already found, we can put in the passwords box:
+		x' or username='bigBoy
+		
+	When we press login, we can see that we have logged in into the user, Alex.
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+	############################################################
+	$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";
+	$result = pg_prepare($dbconn, "", $query);
+	$result = pg_execute($dbconn, "", array());
+	
+	is replaced by the code below
+	############################################################
+	if($operation == "login"){
+		...
+		$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd=$2";
+		$result = pg_prepare($dbconn, "", $query);
+		$result = pg_execute($dbconn, "", array($user, $password));
+		...
+	}
+	
+	Instead if directly using the $user and $password in the query, we use placeholder variables for them
+	and execute from the array($user, $password)
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+	Using the placeholder variables $1 and $2, we can fix the query so that when pg_execute happens,
+	it will only get the correct username and correct password from the database and matches it with
+	the requests from the username box and the passwords box.
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

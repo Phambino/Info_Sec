@@ -1,0 +1,118 @@
+<html>
+	<body>
+		<h1> # FIX: XSS: user input/output is not vetted </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+	An XSS vulernability is when a application takes data from the page without proper validation
+	which allows attackers to launch malicious scripts on the victim's browser which can cause
+	redirection to malicious sites or taking over user sessions.
+</xmp>
+                        </li>
+			<li> Example code etc.:
+<xmp>
+	elseif($operation == "addExpression"){
+		$expression = $_REQUEST['expression'];
+		$value=$_REQUEST['value'];
+		$accountId=$_SESSION['accountId'];
+		
+		$dbconn = pg_connect_db();
+		$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");
+		$result = pg_execute($dbconn, "", array());
+		if(!($row = pg_fetch_row($result))) {
+			$result = pg_prepare($dbconn, "", "insert into solution (value, expression, accountId) values ($value, '$expression', $accountId)");
+			$result = pg_execute($dbconn, "", array());
+		} else {
+			$g_errors="$expression is already in our database";
+		}
+	}
+	
+	The issue lies when $value=$_REQUEST['value']; where the user can add html code and the html code would execute
+	because $expression is not being parsed.
+</xmp>
+                        </li>
+			<li> How attacker exploits this: 
+<xmp>
+	Suppose an attacker has already logged into the server or an attacker is already a user,
+	If an attacker adds a bad expression, like:
+	
+		badbadbad
+	
+	and the expression goes through, then the attacker can try and submit something like:
+	
+		<b>badbadbad<\b>
+		
+	and realize that tags from html can be executed. This means the attacker realizes that
+	the page is vulnerable to XSS. Therefore an attacker can submit a malicious input that can
+	launch malicious scripts or cause redirection in sites for a victim that logs in.
+</xmp>
+                        </li>
+			<li> Impact: CIAaa and some details
+<xmp>
+	This could potentially go under Availiabily issue as if an attacker redirects the user to another
+	malicious site, that will interupt access to information.
+	
+	This also goes under authentication as data/software is no longer genuine as the attacker has
+	entered a script as an entry therefore causing issues.
+</xmp>
+                        </li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+	Log into a user for example:
+		username=perl password=perl
+	
+	Add something like:
+		<b>BADENTRY<\b>
+	
+	As you can see, the entry BADENTRY is now bolded since we have not
+	validated the input therefore this being vulnerable and exploitable to attackers.
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+	elseif($operation == "addExpression"){
+		$expression = $_REQUEST['expression'];
+		$value=$_REQUEST['value'];
+		$accountId=$_SESSION['accountId'];
+		$whitelisted_char = '/[^4\+\-\*\/\^\(\)sqrtexponia]+/';
+		$f = preg_match($whitelisted_char, $expression);
+		if($f == 0) {
+				$dbconn = pg_connect_db();
+				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");
+				$result = pg_execute($dbconn, "", array());
+				if(!($row = pg_fetch_row($result))) {
+						$result = pg_prepare($dbconn, "", "insert into solution (value, expression, accountId) values ($value, '$expression', $accountId)");
+						$result = pg_execute($dbconn, "", array());
+				} else {
+						$g_errors="$expression is already in our database";
+				}
+		} else {
+				$g_errors="Input must contain the following: 4,+,-,*,/,^,(,),sqrt,exponentiation";
+		}
+		
+		Use regex to check valid input before running query to add.
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+	Before the expression can be submitted into the database, we run through a regex whitelist check through the valid
+	characters 4, +, -, *, /, ^, (, ), sqrt, exponentiation:
+		
+		$whitelisted_char = '/[^4\+\-\*\/\^\(\)sqrtexponia]+/';
+		$f = preg_match($whitelisted_char, $expression);
+		
+	Given our regex, preg_match will return 0 if no match and 1 if match. If we find any invalid input, it will match therefore
+	returning 1 therefore give us the error. So an expression with invalid input cannot be added to our expression list
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>
