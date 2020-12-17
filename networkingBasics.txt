@@ -1,0 +1,243 @@
+scp UTORID@dh2020pcXX.utm.utoronto.ca:/virtual/csc347/networkingTutorial.zip .
+unzip networkingTutorial.zip
+
+# You will be working with Kali, FC4, dsl_10, dsl_192, Ubuntu804_owasp. 
+# Make sure to choose I Moved It.
+# Bring up Kali, FC4, Ubuntu804_owasp
+
+Kali: NAT kali/kali
+FC4 : VMNET3 and VMNET4 root/password 
+Ubuntu804_owasp : VMNET3 arnold/password
+dsl_10: VMNET4 no account needed
+dsl_192: VMNET3 no account needed
+
+
+# Bring up DSL_10 and DSL_192. 
+# Fix the path for the iso.
+# Fix dsl_10  so that it has IP: 10.10.10.17   GW: 10.10.10.10   SUBNETMASK: 255.255.255.0
+# Fix dsl_192 so that it has IP: 192.168.10.17 GW: 192.168.10.10 SUBNETMASK: 255.255.255.0
+# See the video!
+
+----------------------------------------------------------------
+			The Network
+----------------------------------------------------------------
+
+Run ifconfig on all systems to fill out the table below...
+
+----------------------------------------------------------------
+Kali            eth: 0 mac: 00:0c:29:bb:4e:8a ip: 172.16.107.136
+FC4             eth: 0 mac: 00:0C:29:FC:33:61 ip: 10.10.10.10
+FC4             eth: 1 mac: 00:0C:29:FC:33:6B ip: 192.168.10.10 
+Ubuntu804_owasp eth:   mac: 00:0c:29:95:c6:0c ip: 192.168.10.100
+dsl_10          eth:   mac: 00:0C:29:D6:39:2F ip: 10.10.10.17
+dsl_192         eth:   mac: 00:0C:29:1F:EE:C4 ip: 192.168.10.17
+----------------------------------------------------------------
+----------------------------------------------------------------
+			Kali
+----------------------------------------------------------------
+# Set Kali to NAT, login to kali and bring up a terminal
+# Run the following commands...
+arp -n
+ifconfig
+netstat -rn # See: https://tldp.org/LDP/nag/x-087-2-iface.netstat.html
+netstat -an
+cat /etc/network/interfaces
+
+# Note, some other ways to look at the route table...
+route -n # same thing different command
+ip r # same thing different command
+cat /proc/net/route # raw tables
+----------------------------------------------------------------
+			FC4
+----------------------------------------------------------------
+# From Kali, login to FC4, this is a gateway machine, the router connecting two different networks
+# It has two ethernet addresses. Kali sits above the whole network and can see both sides.
+
+ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes256-cbc root@192.168.10.10 # password
+ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes256-cbc root@10.10.10.10 # password
+
+# Notice a few things:
+grep -e forward /etc/sysctl.conf 
+	
+	# Controls IP packet forwarding
+	net.ipv4.ip_forward = 1 
+
+# QUESTION: What does this mean? Compare with the result of running this command on Kali, Ubuntu804 and DSL_*
+
+	YOUR ANSWER GOES HERE
+
+netstat -rn
+
+	Kernel IP routing table
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+	10.10.10.0      0.0.0.0         255.255.255.0   U         0 0          0 eth0
+	192.168.10.0    0.0.0.0         255.255.255.0   U         0 0          0 eth1
+	169.254.0.0     0.0.0.0         255.255.0.0     U         0 0          0 eth1
+
+# QUESTION: Is there a default gateway?
+
+	No because genmask would be all 0 and destination would be all 0 and gateway 
+	would result in an host we can gateway out to
+
+more /etc/sysconfig/network-scripts/ifcfg-eth0
+
+	DEVICE=eth0
+	BOOTPROTO=static
+	IPADDR=10.10.10.10
+	NETMASK=255.255.255.0
+	ONBOOT=yes
+	TYPE=Ethernet
+
+more /etc/sysconfig/network-scripts/ifcfg-eth1
+
+	DEVICE=eth1
+	BOOTPROTO=static
+	IPADDR=192.168.10.10
+	NETMASK=255.255.255.0
+	ONBOOT=yes
+	TYPE=Ethernet
+
+ifconfig
+
+	eth0    Link encap:Ethernet  HWaddr 00:0C:29:FC:33:61  
+			inet addr:10.10.10.10  Bcast:10.10.10.255  Mask:255.255.255.0
+			inet6 addr: fe80::20c:29ff:fefc:3361/64 Scope:Link
+			UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+			RX packets:252 errors:0 dropped:0 overruns:0 frame:0
+			TX packets:9 errors:0 dropped:0 overruns:0 carrier:0
+			collisions:0 txqueuelen:1000 
+			RX bytes:28592 (27.9 KiB)  TX bytes:546 (546.0 b)
+			Interrupt:5 Base address:0x2000 
+
+	eth1    Link encap:Ethernet  HWaddr 00:0C:29:FC:33:6B  
+			inet addr:192.168.10.10  Bcast:192.168.10.255  Mask:255.255.255.0
+			inet6 addr: fe80::20c:29ff:fefc:336b/64 Scope:Link
+			UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+			RX packets:427 errors:0 dropped:0 overruns:0 frame:0
+			TX packets:190 errors:0 dropped:0 overruns:0 carrier:0
+			collisions:0 txqueuelen:1000 
+			RX bytes:44336 (43.2 KiB)  TX bytes:29452 (28.7 KiB)
+			Interrupt:9 Base address:0x2080 
+
+	lo      Link encap:Local Loopback  
+			inet addr:127.0.0.1  Mask:255.0.0.0
+			inet6 addr: ::1/128 Scope:Host
+			UP LOOPBACK RUNNING  MTU:16436  Metric:1
+			RX packets:96 errors:0 dropped:0 overruns:0 frame:0
+			TX packets:96 errors:0 dropped:0 overruns:0 carrier:0
+			collisions:0 txqueuelen:0 
+			RX bytes:7620 (7.4 KiB)  TX bytes:7620 (7.4 KiB)
+
+# Find the IP addresses and their MAC that FC4 knows so far
+# Don't play with the machines yet, so this should be fairly empty!
+
+arp -n
+
+	Address                  HWtype  HWaddress           Flags Mask            Iface
+	192.168.10.1             ether   00:50:56:C0:00:03   C                     eth1
+	192.168.10.100           ether   00:0C:29:95:C6:0C   C                     eth1
+
+----------------------------------------------------------------
+			Ubuntu804_owasp
+----------------------------------------------------------------
+# Bring up Ubuntu804_owasp (on VMNET3) and ssh into it from Kali
+ssh arnold@192.168.10.100 # password
+
+ifconfig
+
+	eth0    Link encap:Ethernet  HWaddr 00:0c:29:95:c6:0c  
+			inet addr:192.168.10.100  Bcast:192.168.10.255  Mask:255.255.255.0
+			inet6 addr: fe80::20c:29ff:fe95:c60c/64 Scope:Link
+			UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+			RX packets:64166 errors:0 dropped:0 overruns:0 frame:0
+			TX packets:44477 errors:0 dropped:0 overruns:0 carrier:0
+			collisions:0 txqueuelen:1000 
+			RX bytes:5305447 (5.0 MB)  TX bytes:20173563 (19.2 MB)
+			Interrupt:17 Base address:0x2000 
+
+	lo      Link encap:Local Loopback  
+			inet addr:127.0.0.1  Mask:255.0.0.0
+			inet6 addr: ::1/128 Scope:Host
+			UP LOOPBACK RUNNING  MTU:16436  Metric:1
+			RX packets:157910 errors:0 dropped:0 overruns:0 frame:0
+			TX packets:157910 errors:0 dropped:0 overruns:0 carrier:0
+			collisions:0 txqueuelen:0 
+			RX bytes:25142783 (23.9 MB)  TX bytes:25142783 (23.9 MB)
+
+netstat -rn
+
+	Kernel IP routing table                                                                                                     
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface                                              
+	192.168.10.0    0.0.0.0         255.255.255.0   U         0 0          0 eth0                                               
+	0.0.0.0         192.168.10.10   0.0.0.0         UG        0 0          0 eth0
+
+# QUESTION: What does this mean? Complete below, after finishing the DSL_10 and DSL_192 section.
+
+# If a program on Ubuntu804_owasp wants to send an IP packet to 192.168.10.17 it does the following:
+
+	We take the ip address 192.168.10.17, we "and" it with the genmask and we get the destination.
+	Find the mac address of dsl_192 through an arp request and it would create an ethernet packet and directly 
+	broadcast out to dsl_192
+
+# If a program on Ubuntu804_owasp wants to send an IP packet to 10.10.10.17 it does the following:
+
+	We take the ip address of 10.10.10.17 and "and" it with the mask and we can see that it doesn't match
+	the destination so the ip address is not local. So we go down the table to and we "and" it with the mask
+	of 0.0.0.0 and we get the destination so we use that default gateway. We would send it to FC4 and they will
+	handle hte ethernet packet from there by unpackaging and repackaging it and then sending it over.
+
+----------------------------------------------------------------
+			DSL_10 and DSL_192
+----------------------------------------------------------------
+
+# Run arp -n  on dsl_10, dsl_128, FC4 and take note of which systems know which MAC/IP addresses
+
+# On dsl_10, ping its gateway: 10.10.10.10
+
+ping 10.10.10.10 # do this only from dsl_10
+
+# Run arp -n on dsl_10, dsl_128, FC4 and take note of which systems know which MAC/IP addresses
+
+# QUESTION: What changed? 
+
+	The arp -n table changed with the requested ip addresses of 10.10.10.17 on FC4 and 10.10.10.10 on dsl_192
+
+# QUESTION: Explain the difference.
+
+	Before we pinged 10.10.10.10, we didn't know the ip when we arp requested from dsl_10, FC4, and 
+	dsl_192. But after we sent a packet to 10.10.10.10, we found out the mac address and running arp
+	shows the ip address
+
+# On dsl_10, ping 192.168.10.17
+
+ping 192.168.10.17 # do this only from dsl_10
+
+# Run arp -n on dsl_10, dsl_128, FC4 and take note of which systems know which MAC/IP addresses
+# QUESTION: What changed? 
+
+	Nothing changed, the arp made no change
+
+# QUESTION: Explain the difference. Why does it seem that dsl_10 knows about FC4, but not dsl_128?
+
+	FC4 is the one handling the packets between those ips so dsl_128 does not need to know the mac
+	address of dsl_10
+
+# Now ssh from dsl_10 to Ubuntu804_owasp and keep this connection open
+ssh arnold@192.168.10.100 # password
+
+# Use netstat -an on dsl_10 and on Ubuntu804_owasp and find the ssh connection between them.
+netstat -an | grep -ie 22
+
+# TCP: ssh connection from dsl_10 to Ubuntu804_owasp
+
+	ip: 10.10.10.17 port: 1026
+		TO 
+	ip: 192.168.10.100 port: 22
+
+# QUESTION: What does FC4 think of the ssh connection? run netstat -an on it.
+
+	Sees the packet but is not connected to it therefore does not see connection
+
+# QUESTION: At this point, does dsl_10 know the MAC address of Ubuntu804_owasp?
+
+	No it doesn't need to and vice versa

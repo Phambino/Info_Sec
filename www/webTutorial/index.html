@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HTTP, HTML, PhP</title>
+	</head>
+	<body>
+		<h1>HTTP, HTML and FORMS, COOKIES and SESSIONS</h1>
+		<h2>Preliminaries</h2>
+		Download 
+<xmp>
+scp UTORID@dh2020pcXX.utm.utoronto.ca:/virtual/csc347/Ubuntu804Server_owasp.zip
+arnold password
+sudo bash # password
+
+AND
+
+Kali linux, VM configured so that it is "NAT Used to share the host IP".
+bring up a terminal in Kali and then 
+ssh arnold@192.168.10.100 # password
+sudo bash # password
+</xmp>
+		<h2>HTTP</h2>
+			<a href=https://www.w3.org/Protocols/Specs.html>http specification</a>
+			<ul>
+				<li> TCP/IP/Ethernet (we will cover this in detail later) </li>
+			
+				<li> client/server
+					<br/>Example: <a href=https://www.mozilla.org/en-CA/firefox/>firefox</a>/<a href=https://httpd.apache.org/>apache</a>
+					
+<xmp>
+# (server) on 192.168.10.100
+$ ps aux | grep -ie apache
+root      4839  0.0  1.2  20640  6316 ?        Ss   11:24   0:00 /usr/sbin/apache2 -k start
+www-data  4861  0.0  0.9  20640  4892 ?        S    11:24   0:00 /usr/sbin/apache2 -k start
+www-data  4862  0.0  1.0  20640  5420 ?        S    11:24   0:00 /usr/sbin/apache2 -k start
+www-data  4863  0.0  0.8  20640  4496 ?        S    11:24   0:00 /usr/sbin/apache2 -k start
+www-data  4864  0.0  0.6  20640  3328 ?        S    11:24   0:00 /usr/sbin/apache2 -k start
+www-data  4865  0.0  0.6  20640  3328 ?        S    11:24   0:00 /usr/sbin/apache2 -k start
+www-data  5261  0.0  0.6  20640  3328 ?        S    11:28   0:00 /usr/sbin/apache2 -k start
+www-data  5280  0.0  0.6  20640  3328 ?        S    11:28   0:00 /usr/sbin/apache2 -k start
+root      5796  0.0  0.1   3024   780 pts/1    R+   11:51   0:00 grep -ie apache
+</xmp>
+				</li>
+				<li> port 80 
+<xmp>
+# on 192.168.10.100
+$ netstat -an
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 0.0.0.0:7779            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:7780            0.0.0.0:*               LISTEN     
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN     
+tcp        0      0 127.0.0.1:587           0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN     
+tcp        0      0 127.0.0.1:5432          0.0.0.0:*               LISTEN     
+tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN     
+tcp6       0      0 :::22                   :::*                    LISTEN     
+tcp6       0      0 192.168.10.100:22       192.168.10.1:47056      ESTABLISHED
+tcp6       0      0 192.168.10.100:22       192.168.10.1:47274      ESTABLISHED
+udp        0      0 127.0.0.1:46700         127.0.0.1:46700         ESTABLISHED
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   Path
+unix  2      [ ]         DGRAM                    6010     @/com/ubuntu/upstart
+unix  2      [ ACC ]     STREAM     LISTENING     11349    /var/run/postgresql/.s.PGSQL.5432
+unix  2      [ ]         DGRAM                    6144     @/org/kernel/udev/udevd
+unix  2      [ ACC ]     STREAM     LISTENING     11168    /var/run/mysqld/mysqld.sock
+unix  9      [ ]         DGRAM                    10993    /dev/log
+unix  2      [ ACC ]     STREAM     LISTENING     12537    /var/run/sendmail/mta/smcontrol
+unix  2      [ ]         DGRAM                    12633    
+unix  3      [ ]         STREAM     CONNECTED     12630    
+unix  3      [ ]         STREAM     CONNECTED     12629    
+unix  2      [ ]         DGRAM                    12534    
+unix  2      [ ]         DGRAM                    11765    
+unix  3      [ ]         STREAM     CONNECTED     11762    
+unix  3      [ ]         STREAM     CONNECTED     11761    
+unix  2      [ ]         DGRAM                    11636    
+unix  2      [ ]         DGRAM                    11421    
+unix  2      [ ]         DGRAM                    11166    
+unix  2      [ ]         DGRAM                    11043    
+</xmp>
+				</li>
+				<li> URL dissection
+<xmp>
+http://192.168.10.100/webTutorial/basic.html
+http://              = protocol (the type of conversation we will have with the server)
+80                   = port ,the default for http
+192.168.10.100       = which server we will be having this conversation with
+                       we hope there is a web server (ie apache) listening
+                       on port 80 here
+/webTutorial/basic.html = the resource we are requesting from the server
+</xmp>
+				<li> Visiting <a href=http://192.168.10.100/webTutorial/basic.html>http://192.168.10.100/webTutorial/basic.html</a> using Firefox
+				<li> GET request/server RESPONSE to http://192.168.10.100/webTutorial/basic.html
+<xmp>
+$ nc 192.168.10.100 80
+GET /webTutorial/basic.html HTTP/1.0
+
+HTTP/1.1 200 OK
+Date: Sun, 18 Oct 2020 16:08:38 GMT
+Server: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch
+Last-Modified: Sun, 18 Oct 2020 15:30:14 GMT
+ETag: "7640f-9d-5b1f3ac926d80"
+Accept-Ranges: bytes
+Content-Length: 157
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Document Title</title>
+	</head>
+	<body>
+	Page Content Goes here!
+	</body>
+</html>
+Connection closed by foreign host.
+</xmp>
+				</li>
+			<li> <a href=httpExercises.txt>HTTP Exercises</a> </li>
+			</ul>
+		<h2>HTML and FORMS</h2>
+			<a href=https://www.w3.org/TR/html52/>HTML5 Specification</a>, but you might prefer <a href=https://developer.mozilla.org/en-US/docs/Web/HTML/Element>HTML elements reference</a>
+			<ul>
+			<li> <a href=htmlExample1.html>some basics</a> </li> 
+			<li> <a href=forms.html>forms</a> 
+				<ul>
+				<li> View the page source.
+				<li> Play with the form, put a name in and submit.
+				<li> Notice the URL that is fetched when you submit.
+				<li> Take a look at the script that this form submits to on the server at <code>/var/www/webTutorial/sayHi.php</code>
+				</ul>
+			</li> 
+			<li> <a href=htmlAndFormsExercises.txt>HTML and FORMS Exercises</a> </li>
+			</ul>
+
+		<h2>COOKIES and SESSIONS</h2>
+		<b>Cookies:</b> Part of the HTTP protocol, a server can send <code>Set-Cookie: iLoveOreos </code> to a browser,
+		The browser should then reply to that server with <code>Cookie: iLoveOreos </code>, on each subsequent
+		visit to the server. These can be used to store information on the browser, and can be used to implement
+		the notion of session, to maintain information on the server about a particular browser for use in 
+		subsequent requests.
+		<ul>
+		<li> Take a look at where php keeps the sessions database <a href=info.php>info.php</a>. It should be ...
+			<code>/var/lib/php5</code>
+		</li>
+		<li> Now, in kali, open a terminal and then ...
+<xmp>
+ssh arnold@192.168.10.100 # password
+sudo bash # password
+cd /var/lib/php5
+ls
+</xmp>
+		</li> 
+		<li> Repeatedly visit <a href=count.php>count.php</a> with the developer tools open.
+			Taking a look at the requests, and seeing how it affects <code>/var/lib/php5</code>.</li>
+		<li> Find the storage tab and take a look at the cookie that was given by the server to the browser. </li>
+		<li> Here is what is going on under the hood...
+<xmp>
+# What you see below...
+# Browsers first visit to this domain, browser does not send a cookie, it does not have one yet!
+# Server sees that it is the browsers first visit, so it ...
+# 1) Creates a session entry in /var/lib/php5
+# 2) Sends back the session id to the client
+#
+# http://192.168.10.100/webTutorial/count.php 
+$ nc 192.168.10.100 80
+GET /webTutorial/count.php HTTP/1.0
+
+HTTP/1.1 200 OK
+Date: Sun, 18 Oct 2020 22:45:53 GMT
+Server: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch
+X-Powered-By: PHP/5.2.4-2ubuntu5.7
+Set-Cookie: PHPSESSID=df3c8659a848e8cdaf23d690ca3e057f; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Content-Length: 170
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8">
+                <title>Count</title>
+        </head>
+        <body>
+                <h1>Count</h1>
+                You have been here 1 times.
+        </body>
+</html>
+</xmp>
+		</li>
+		<li> Now lets simulate a browser going back to the server...
+<xmp>
+# What you see below...
+# The browser is returning to the server, it has a cookie, so
+# it sends it back in the request.
+# Server sees that this particular browser has a session, so pulls
+# information from it's session entry and uses it to handle the request.
+#
+# http://192.168.10.100/webTutorial/count.php 
+$ nc 192.168.10.100 80
+GET /webTutorial/count.php HTTP/1.0
+Cookie: PHPSESSID=df3c8659a848e8cdaf23d690ca3e057f;
+
+HTTP/1.1 200 OK
+Date: Sun, 18 Oct 2020 23:06:28 GMT
+Server: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch
+X-Powered-By: PHP/5.2.4-2ubuntu5.7
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Content-Length: 170
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8">
+                <title>Count</title>
+        </head>
+        <body>
+                <h1>Count</h1>
+                You have been here 2 times.
+        </body>
+</html>
+</xmp>
+			<li> <a href=cookiesAndSessionsExercises.txt>COOKIES and SESSIONS Exercises</a> </li>
+		</ul>
+	</body>
+</html>

@@ -1,0 +1,78 @@
+HTTP Exercises
+
+1) use ps to verify that apache is running on 192.16.10.100
+
+   ps aux | grep apache
+
+root      5000  0.0  1.2  20636  6312 ?        Ss   17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5011  0.0  0.7  20636  3816 ?        S    17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5013  0.0  0.7  20636  3784 ?        S    17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5015  0.0  0.7  20636  3788 ?        S    17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5017  0.0  0.7  20636  3784 ?        S    17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5020  0.0  0.6  20636  3332 ?        S    17:41   0:00 /usr/sbin/apache2 -k start            
+www-data  5133  0.0  0.6  20636  3332 ?        S    17:42   0:00 /usr/sbin/apache2 -k start 
+
+2) find out if 192.168.10.100 has port 80 open
+
+   netstat -an
+
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN
+
+    The port 80 is open  
+
+3) use firefox on Kali to
+   a)   Dissect the following URL:
+
+        http://192.168.10.100/webTutorial/htmlExample1.html 
+        http://       			= protocol
+        80              		= port
+        192.168.10.100  		= server
+        /webTutorial/htmlExample1.html  = resource
+
+   b)   fetch http://192.168.10.100/webTutorial/htmlExample1.html using firefox
+
+        NOTHING TO DO HERE
+
+   c)   Bring up developer tools and switch to the network tab, 
+        then reload 
+            http://192.168.10.100/webTutorial/htmlExample1.html, 
+        how many network requests were made, why?
+
+        There were 3 network requests:
+	    One for the document for the htmlExample1.html
+	    One to get the source of the cpugraph.jpg 
+	    One trying to load favicon.ico for the url icon
+
+   d)   Take a look at the page source (ctrl-U)
+
+        NOTHING TO SUBMIT HERE
+
+4) use nc to fetch http://192.168.10.100/webTutorial/htmlExample1.html
+   
+HTTP/1.1 200 OK
+Date: Mon, 19 Oct 2020 22:15:19 GMT
+Server: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch
+Last-Modified: Mon, 19 Oct 2020 00:08:48 GMT
+ETag: "7642a-129-5b1faeb1c6400"
+Accept-Ranges: bytes
+Content-Length: 297
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8">
+                <title>HTML Example 1</title>
+        </head>
+        <body>
+                <h1>HTML Example 1</h1>
+                <a href=htmlExample2.html>link to htmlExample2.html</a>, and 
+                below is an image
+                <br/><br/>
+                <img src="cpugraph.jpg" />
+                <br/><br/>
+        </body>
+</html>
+
+

