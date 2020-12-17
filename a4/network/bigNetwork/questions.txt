@@ -1,0 +1,71 @@
+NOTE: For this question it is not necessary to implement the 
+described network using VMWare. This question can be done
+completely 'on paper'. 
+
+----------------------------------------------------------------------------
+Your organizations network diagram is in Diagram1.jpg.
+
+Your ISP has given you a single public IP address 93.184.216.34
+on subnet 93.184.216.*. Firewall1 93.184.216.34 (aka 192.168.10.10)
+routes all internet bound traffic out to the ISP gateway 
+machine 93.184.216.1.  
+
+To prevent an attackers lateral movement through the organization, you have
+taken a layered approach. The 192.168.*.* network is segmented into 
+192.168.10.* DMZ as well as a 192.168.11.* LAN. 
+
+See for example: https://searchsecurity.techtarget.com/definition/DMZ
+
+You have placed the mail server (192.168.10.25) and webserver (192.168.10.100)
+in the DMZ. Complete the route tables below and firewall1.bash, firewall2.bash
+as described.
+----------------------------------------------------------------------------
+[4 Marks] Route Tables
+
+q1) netstat -rn # as executed on Firewall1 93.184.216.34 (aka 192.168.10.10)
+
+	Kernel IP routing table
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+	192.168.10.0	0.0.0.0			255.255.255.0	U		0	0		0	 eth0
+	93.184.216.0	0.0.0.0			255.255.255.0	U		0	0		0	 eth1
+	169.254.0.0     0.0.0.0         255.255.0.0     U       0   0       0    eth1
+
+q2) netstat -rn # as executed on iFirewall2 192.168.10.11 (aka 192.168.11.10)
+
+	Kernel IP routing table
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+	192.168.10.0	0.0.0.0			255.255.255.0	U		0	0		0	 eth0
+	192.168.11.0	0.0.0.0			255.255.255.0	U		0	0		0	 eth1
+	169.254.0.0     0.0.0.0         255.255.0.0     U       0 	0       0 	 eth1
+
+q3) netstat -rn # as executed on the db server 192.168.11.100
+
+	Kernel IP routing table                                                                                                     
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface                                              
+	192.168.11.0    0.0.0.0         255.255.255.0   U         0 0          0 eth1                                               
+	0.0.0.0         192.168.10.10   0.0.0.0         UG        0 0          0 eth1
+
+q4) netstat -rn # as executed on the web server 192.168.10.100
+
+	Kernel IP routing table                                                                                                     
+	Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface                                              
+	192.168.10.0    0.0.0.0         255.255.255.0   U         0 0          0 eth0                                               
+	0.0.0.0         192.168.10.10   0.0.0.0         UG        0 0          0 eth0
+
+----------------------------------------------------------------------------
+[20 Marks]
+Firewall configuration: firewall1.bash and firewall2.bash lists
+constraints for the network. Some of the constraints require
+rules in one script, some in both, some in neither. Please rules
+in scripts as appropriate.
+
+Please label the rules with #(a), #(b), #(c), ...
+according to which of the constraints they implement. 
+If you place a rule in a section, remove the corresponding comment...
+
+# NO RULE NEEDED HERE                                                                         #(b)
+
+Please see the sample in ../nmap/firewallRestrictive.bash
+
+YOUR SOLUTION GOES IN firewall1.bash, firewall2.bash
+----------------------------------------------------------------------------

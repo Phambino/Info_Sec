@@ -1,0 +1,291 @@
+All questions rely on the network setup given to you in lecture.
+See Diagrams.* in this directory. 
+
+------------------------------------------------------------------------------------
+q1: [1 Marks]
+Place Kali on the 192.168.10.* network
+Run firewallPermissive on FC4 and then 
+run nmap to list open ports and versions on the 192.168.10.* network.
+------------------------------------------------------------------------------------
+
+	YOUR SCAN GOES HERE, SHOULD SHOW 192.168.10.10, 192.168.10.17, 192.168.10.100, ...
+
+============================================================================================
+
+	>>> nmap 192.168.10.*
+
+	Starting Nmap 7.80 ( https://nmap.org ) at 2020-12-05 17:01 EST
+	Nmap scan report for 192.168.10.10
+	Host is up (0.0041s latency).
+	Not shown: 996 closed ports
+	PORT      STATE SERVICE
+	22/tcp    open  ssh
+	111/tcp   open  rpcbind
+	631/tcp   open  ipp
+	32769/tcp open  filenet-rpc                                                                                                                                                                            
+																																																		
+	Nmap scan report for 192.168.10.17
+	Host is up (0.0029s latency).
+	All 1000 scanned ports on 192.168.10.17 are closed
+
+	Nmap scan report for 192.168.10.100
+	Host is up (0.0028s latency).
+	Not shown: 997 closed ports
+	PORT    STATE SERVICE
+	22/tcp  open  ssh
+	80/tcp  open  http
+	443/tcp open  https
+
+	Nmap scan report for 192.168.10.130
+	Host is up (0.00058s latency).
+	All 1000 scanned ports on 192.168.10.130 are closed
+
+	Nmap done: 256 IP addresses (4 hosts up) scanned in 15.47 seconds
+
+============================================================================================
+
+	>>> nmap -sT -sV -p- 192.168.10.*
+
+	Nmap scan report for 192.168.10.1
+	Host is up (0.0043s latency).
+	Not shown: 65532 filtered ports
+	PORT      STATE SERVICE     VERSION
+	7680/tcp  open  pando-pub?
+	17500/tcp open  ssl/db-lsp?
+	27036/tcp open  ssl/steam   Valve Steam In-Home Streaming service (TLSv1.2 PSK)
+	MAC Address: 00:50:56:C0:00:03 (VMware)
+
+	Nmap scan report for 192.168.10.10
+	Host is up (0.0026s latency).
+	Not shown: 65531 closed ports
+	PORT      STATE SERVICE VERSION
+	22/tcp    open  ssh     OpenSSH 4.0 (protocol 2.0)
+	111/tcp   open  rpcbind 2 (RPC #100000)
+	631/tcp   open  ipp     CUPS 1.1
+	32769/tcp open  status  1 (RPC #100024)
+	MAC Address: 00:0C:29:FC:33:6B (VMware)
+
+	Nmap scan report for 192.168.10.17
+	Host is up (0.0015s latency).
+	All 65535 scanned ports on 192.168.10.17 are closed
+	MAC Address: 00:0C:29:1F:EE:C4 (VMware)
+
+	Nmap scan report for 192.168.10.100
+	Host is up (0.00038s latency).
+	Not shown: 65530 closed ports
+	PORT     STATE SERVICE   VERSION
+	22/tcp   open  ssh       OpenSSH 4.7p1 Debian 8ubuntu1.2 (protocol 2.0)
+	80/tcp   open  http      Apache httpd 2.2.8 ((Ubuntu) PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch mod_ssl/2.2.8 OpenSSL/0.9.8g)
+	443/tcp  open  http      Apache httpd 2.2.8 (PHP/5.2.4-2ubuntu5.7 with Suhosin-Patch mod_ssl/2.2.8 OpenSSL/0.9.8g)
+	7779/tcp open  jetdirect JetDirect
+	7780/tcp open  unknown
+	1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+	SF-Port7780-TCP:V=7.80%I=7%D=12/5%Time=5FCC161E%P=x86_64-pc-linux-gnu%r(Ge
+	SF:nericLines,96,"ERROR:\x20processing\x20start,\x20expecting\x20digit\nUS
+	SF:AGE:\x20start,stop,step\x20where\x20each\x20is\x20an\x20integer\x20from
+	SF:\x200/1\x20to\x202147483647\nUSAGE:\x20try\x201,4,1\x20or\x201,5,1\x20f
+	SF:or\x20example\n")%r(GetRequest,96,"ERROR:\x20processing\x20start,\x20ex
+	SF:pecting\x20digit\nUSAGE:\x20start,stop,step\x20where\x20each\x20is\x20a
+	SF:n\x20integer\x20from\x200/1\x20to\x202147483647\nUSAGE:\x20try\x201,4,1
+	SF:\x20or\x201,5,1\x20for\x20example\n")%r(HTTPOptions,96,"ERROR:\x20proce
+	SF:ssing\x20start,\x20expecting\x20digit\nUSAGE:\x20start,stop,step\x20whe
+	SF:re\x20each\x20is\x20an\x20integer\x20from\x200/1\x20to\x202147483647\nU
+	SF:SAGE:\x20try\x201,4,1\x20or\x201,5,1\x20for\x20example\n")%r(RTSPReques
+	SF:t,96,"ERROR:\x20processing\x20start,\x20expecting\x20digit\nUSAGE:\x20s
+	SF:tart,stop,step\x20where\x20each\x20is\x20an\x20integer\x20from\x200/1\x
+	SF:20to\x202147483647\nUSAGE:\x20try\x201,4,1\x20or\x201,5,1\x20for\x20exa
+	SF:mple\n")%r(RPCCheck,96,"ERROR:\x20processing\x20start,\x20expecting\x20
+	SF:digit\nUSAGE:\x20start,stop,step\x20where\x20each\x20is\x20an\x20intege
+	SF:r\x20from\x200/1\x20to\x202147483647\nUSAGE:\x20try\x201,4,1\x20or\x201
+	SF:,5,1\x20for\x20example\n")%r(DNSVersionBindReqTCP,96,"ERROR:\x20process
+	SF:ing\x20start,\x20expecting\x20digit\nUSAGE:\x20start,stop,step\x20where
+	SF:\x20each\x20is\x20an\x20integer\x20from\x200/1\x20to\x202147483647\nUSA
+	SF:GE:\x20try\x201,4,1\x20or\x201,5,1\x20for\x20example\n")%r(DNSStatusReq
+	SF:uestTCP,96,"ERROR:\x20processing\x20start,\x20expecting\x20digit\nUSAGE
+	SF::\x20start,stop,step\x20where\x20each\x20is\x20an\x20integer\x20from\x2
+	SF:00/1\x20to\x202147483647\nUSAGE:\x20try\x201,4,1\x20or\x201,5,1\x20for\
+	SF:x20example\n")%r(Help,96,"ERROR:\x20processing\x20start,\x20expecting\x
+	SF:20digit\nUSAGE:\x20start,stop,step\x20where\x20each\x20is\x20an\x20inte
+	SF:ger\x20from\x200/1\x20to\x202147483647\nUSAGE:\x20try\x201,4,1\x20or\x2
+	SF:01,5,1\x20for\x20example\n")%r(SSLSessionReq,96,"ERROR:\x20processing\x
+	SF:20start,\x20expecting\x20digit\nUSAGE:\x20start,stop,step\x20where\x20e
+	SF:ach\x20is\x20an\x20integer\x20from\x200/1\x20to\x202147483647\nUSAGE:\x
+	SF:20try\x201,4,1\x20or\x201,5,1\x20for\x20example\n");
+	MAC Address: 00:0C:29:95:C6:0C (VMware)
+	Service Info: Host: localhost; OS: Linux; Device: printer; CPE: cpe:/o:linux:linux_kernel
+
+	Stats: 0:05:52 elapsed; 254 hosts completed (5 up), 1 undergoing Connect Scan
+	Connect Scan Timing: About 13.90% done; ETC: 18:44 (0:19:00 remaining)
+	Nmap scan report for 192.168.10.254
+	Host is up (0.00019s latency).
+	All 65535 scanned ports on 192.168.10.254 are filtered
+	MAC Address: 00:50:56:EC:93:C0 (VMware)
+
+	Nmap scan report for 192.168.10.130
+	Host is up (0.000039s latency).
+	All 65535 scanned ports on 192.168.10.130 are closed
+
+	Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+	Nmap done: 256 IP addresses (6 hosts up) scanned in 1484.86 seconds
+
+============================================================================================
+
+	>>> nmap -sU -sV --top-ports 100 192.168.10.*
+
+	Nmap scan report for 192.168.10.1
+	Host is up (0.00035s latency).
+
+	PORT      STATE         SERVICE      VERSION
+	53/udp    open|filtered domain
+	67/udp    open|filtered dhcps
+	68/udp    open|filtered dhcpc
+	69/udp    open|filtered tftp
+	123/udp   open|filtered ntp
+	135/udp   open|filtered msrpc
+	137/udp   open|filtered netbios-ns
+	138/udp   open|filtered netbios-dgm
+	139/udp   open|filtered netbios-ssn
+	161/udp   open|filtered snmp
+	162/udp   open|filtered snmptrap
+	445/udp   open|filtered microsoft-ds
+	500/udp   open|filtered isakmp
+	514/udp   open|filtered syslog
+	520/udp   open|filtered route
+	631/udp   open|filtered ipp
+	1434/udp  open|filtered ms-sql-m
+	1900/udp  open|filtered upnp
+	4500/udp  open|filtered nat-t-ike
+	49152/udp open|filtered unknown
+	MAC Address: 00:50:56:C0:00:03 (VMware)
+
+	Nmap scan report for 192.168.10.10
+	Host is up (0.00033s latency).
+
+	PORT      STATE         SERVICE      VERSION
+	53/udp    closed        domain
+	67/udp    closed        dhcps
+	68/udp    closed        dhcpc
+	69/udp    closed        tftp
+	123/udp   open|filtered ntp
+	135/udp   closed        msrpc
+	137/udp   closed        netbios-ns
+	138/udp   closed        netbios-dgm
+	139/udp   closed        netbios-ssn
+	161/udp   closed        snmp
+	162/udp   closed        snmptrap
+	445/udp   open|filtered microsoft-ds
+	500/udp   closed        isakmp
+	514/udp   closed        syslog
+	520/udp   open|filtered route
+	631/udp   open|filtered ipp
+	1434/udp  closed        ms-sql-m
+	1900/udp  closed        upnp
+	4500/udp  closed        nat-t-ike
+	49152/udp closed        unknown
+	MAC Address: 00:0C:29:FC:33:6B (VMware)
+
+	Nmap scan report for 192.168.10.17
+	Host is up (0.00029s latency).
+
+	PORT      STATE  SERVICE      VERSION
+	53/udp    closed domain
+	67/udp    closed dhcps
+	68/udp    closed dhcpc
+	69/udp    closed tftp
+	123/udp   closed ntp
+	135/udp   closed msrpc
+	137/udp   closed netbios-ns
+	138/udp   closed netbios-dgm
+	139/udp   closed netbios-ssn
+	161/udp   closed snmp
+	162/udp   closed snmptrap
+	445/udp   closed microsoft-ds
+	500/udp   closed isakmp
+	514/udp   closed syslog
+	520/udp   closed route
+	631/udp   closed ipp
+	1434/udp  closed ms-sql-m
+	1900/udp  closed upnp
+	4500/udp  closed nat-t-ike
+	49152/udp closed unknown
+	MAC Address: 00:0C:29:1F:EE:C4 (VMware)
+
+	Nmap scan report for 192.168.10.100
+	Host is up (0.00022s latency).
+
+	PORT      STATE  SERVICE      VERSION
+	53/udp    closed domain
+	67/udp    closed dhcps
+	68/udp    closed dhcpc
+	69/udp    closed tftp
+	123/udp   closed ntp
+	135/udp   closed msrpc
+	137/udp   closed netbios-ns
+	138/udp   closed netbios-dgm
+	139/udp   closed netbios-ssn
+	161/udp   closed snmp
+	162/udp   closed snmptrap
+	445/udp   closed microsoft-ds
+	500/udp   closed isakmp
+	514/udp   closed syslog
+	520/udp   closed route
+	631/udp   closed ipp
+	1434/udp  closed ms-sql-m
+	1900/udp  closed upnp
+	4500/udp  closed nat-t-ike
+	49152/udp closed unknown
+	MAC Address: 00:0C:29:95:C6:0C (VMware)
+
+	Nmap scan report for 192.168.10.254
+	Host is up (0.00018s latency).
+
+	PORT      STATE         SERVICE      VERSION
+	53/udp    open|filtered domain
+	67/udp    open|filtered dhcps
+	68/udp    open|filtered dhcpc
+	69/udp    open|filtered tftp
+	123/udp   open|filtered ntp
+	135/udp   open|filtered msrpc
+	137/udp   open|filtered netbios-ns
+	138/udp   open|filtered netbios-dgm
+	139/udp   open|filtered netbios-ssn
+	161/udp   open|filtered snmp
+	162/udp   open|filtered snmptrap
+	445/udp   open|filtered microsoft-ds
+	500/udp   open|filtered isakmp
+	514/udp   open|filtered syslog
+	520/udp   open|filtered route
+	631/udp   open|filtered ipp
+	1434/udp  open|filtered ms-sql-m
+	1900/udp  open|filtered upnp
+	4500/udp  open|filtered nat-t-ike
+	49152/udp open|filtered unknown
+	MAC Address: 00:50:56:EC:93:C0 (VMware)
+
+	Nmap scan report for 192.168.10.130
+	Host is up (0.0000040s latency).
+
+	PORT      STATE  SERVICE      VERSION
+	53/udp    closed domain
+	67/udp    closed dhcps
+	68/udp    closed dhcpc
+	69/udp    closed tftp
+	123/udp   closed ntp
+	135/udp   closed msrpc
+	137/udp   closed netbios-ns
+	138/udp   closed netbios-dgm
+	139/udp   closed netbios-ssn
+	161/udp   closed snmp
+	162/udp   closed snmptrap
+	445/udp   closed microsoft-ds
+	500/udp   closed isakmp
+	514/udp   closed syslog
+	520/udp   closed route
+	631/udp   closed ipp
+	1434/udp  closed ms-sql-m
+	1900/udp  closed upnp
+	4500/udp  closed nat-t-ike
+	49152/udp closed unknown
+
+	Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+	Nmap done: 256 IP addresses (6 hosts up) scanned in 350.28 seconds

@@ -1,0 +1,108 @@
+#!/bin/bash
+
+DEMOCA="demoCA";
+
+if  [ -d $DEMOCA ]; then
+	echo "$DEMOCA exists, remove first before setup";
+else 
+	echo "$DEMOCA does not exist, creating";
+	mkdir $DEMOCA
+	mkdir $DEMOCA/certs
+	mkdir $DEMOCA/crl
+	touch $DEMOCA/index.txt
+	mkdir $DEMOCA/newcerts
+	mkdir $DEMOCA/requests
+	echo "1000" > $DEMOCA/serial
+	mkdir $DEMOCA/private
+
+	# WHAT DOES THE ABOVE DO?
+	# Initializes where certificates will be stored in our signing service
+
+	openssl genrsa -des3 -out $DEMOCA/private/cakey.pem 1024
+	openssl req -config openssl.conf -new -x509 -days 1001 -key $DEMOCA/private/cakey.pem -out $DEMOCA/cacert.pem
+	# The above does ... (high level answer expected) 
+	# 
+	# 	genrsa: Generates a RSA private key using a des3 cipher with a 1024 bit limitation and exported to cakey.pem
+	#   req: creates a self-signed certificate using the openssl.conf config file setup that lasts for 1001 days and exported to cacert.pem
+	#
+	# Look in the $DEMOCA directories and document the files that were created
+	# The following files will be created in $DEMOCA
+	# $DEMOCA/private/cakey.pem
+	# 	Contains the RSA private key that will be used to generate a certificate from it
+	# 	...
+	# 
+	# $DEMOCA/cacert.pem
+	# 	YOUR DESCRIPTION OF THIS FILE BELOW, WHAT DOES IT CONTAIN, WHAT IS ITS ROLE IN THIS GAME
+	# 	The certificate is stored here. This is your own certifcate that you have authorized for yourself
+    #   You would use this certificate to authorize other certificate requests coming in.
+	# 	...
+	# ...
+	# 
+
+	openssl x509 -in $DEMOCA/cacert.pem -noout -text
+	# DOCUMENT ITS OUTPUT, DESCRIBE THE IMPORTANT PARTS OF YOUR x509 certificate
+	# 
+	# Certificate:
+    # Data:
+    #     Version: 3 (0x2)
+    #     Serial Number:
+    #         06:fd:01:84:cf:be:38:9b:3b:32:68:f2:69:cb:73:be:32:12:9c:62
+    #     Signature Algorithm: sha256WithRSAEncryption
+    #     Issuer: C = CA, ST = ON, L = sauga, O = uni, OU = 55, CN = david, emailAddress = david@hotmail.com
+    #     Validity
+    #         Not Before: Nov 28 03:42:40 2020 GMT
+    #         Not After : Aug 26 03:42:40 2023 GMT
+    #     Subject: C = CA, ST = ON, L = sauga, O = uni, OU = 55, CN = david, emailAddress = david@hotmail.com
+    #     Subject Public Key Info:
+    #         Public Key Algorithm: rsaEncryption
+    #             RSA Public-Key: (1024 bit)
+    #             Modulus:
+    #                 00:bb:74:a1:62:99:ed:20:8a:e1:3d:f9:5c:a1:27:
+    #                 b6:9e:3f:e2:30:fd:aa:97:17:e2:fe:5b:a5:aa:f9:
+    #                 eb:bc:b6:68:30:28:60:af:22:7c:e1:67:02:2a:1a:
+    #                 dc:46:8e:a2:d4:36:cc:a1:2f:6e:e2:22:f1:fe:a6:
+    #                 3d:be:50:1d:34:5d:26:90:c3:27:de:80:92:ca:c6:
+    #                 55:ba:dd:a3:97:b8:eb:8f:8b:c2:2c:9d:ab:f6:15:
+    #                 cf:bd:be:eb:a4:ea:ac:9c:da:e4:a6:b7:bc:6b:e2:
+    #                 b7:9e:27:3b:08:b7:91:c3:b8:8f:69:56:e5:a1:ce:
+    #                 66:d5:8c:2f:d6:26:35:f8:e1
+    #             Exponent: 65537 (0x10001)
+    #     X509v3 extensions:
+    #         X509v3 Subject Key Identifier: 
+    #             FD:7F:08:71:FB:E2:74:2E:D2:E8:73:C9:55:8B:E3:76:E7:F6:49:0A
+    #         X509v3 Authority Key Identifier: 
+    #             keyid:FD:7F:08:71:FB:E2:74:2E:D2:E8:73:C9:55:8B:E3:76:E7:F6:49:0A
+    #             DirName:/C=CA/ST=ON/L=sauga/O=uni/OU=55/CN=david/emailAddress=david@hotmail.com
+    #             serial:06:FD:01:84:CF:BE:38:9B:3B:32:68:F2:69:CB:73:BE:32:12:9C:62
+
+    #         X509v3 Basic Constraints: 
+    #             CA:TRUE
+    # Signature Algorithm: sha256WithRSAEncryption
+    #      1c:20:34:5d:71:a6:2a:e9:88:fa:76:6b:70:05:e9:fe:77:e2:
+    #      79:7c:68:07:52:b4:43:42:8a:ad:b1:49:f1:6a:a0:a4:73:10:
+    #      cb:45:a5:7f:c9:eb:1e:91:d4:34:60:67:76:d2:94:30:2e:20:
+    #      3d:8d:13:9b:72:37:81:3b:f6:89:b3:65:3b:09:61:67:ac:dd:
+    #      a9:bf:ba:7f:62:4b:b9:7a:a3:20:a1:83:c4:5b:74:02:e5:02:
+    #      6d:a5:d1:33:8d:14:68:f0:8e:df:01:65:14:89:43:0c:9b:5f:
+    #      6a:90:21:93:1e:98:ad:6b:be:74:b8:96:ad:c3:5f:ee:fc:0b:
+    #      15:25
+
+	# 	Reads in an cert, then prints the cert in text without the encrypted cert
+
+    # IMPORTANT PARTS:
+    #   X509v3 Basic Constraints: ---- CERTICATE AUTHORITY
+    #             CA:TRUE
+	# Issuer: C = CA, ST = ON, L = sauga, O = uni, OU = 55, CN = david, emailAddress = david@hotmail.com ----- WHO THE PERSON IS
+    # RSA Public-Key: (1024 bit) ------- RSA KEY IS IMPORTANT
+    # Modulus:
+    #     00:bb:74:a1:62:99:ed:20:8a:e1:3d:f9:5c:a1:27:
+    #     b6:9e:3f:e2:30:fd:aa:97:17:e2:fe:5b:a5:aa:f9:
+    #     eb:bc:b6:68:30:28:60:af:22:7c:e1:67:02:2a:1a:
+    #     dc:46:8e:a2:d4:36:cc:a1:2f:6e:e2:22:f1:fe:a6:
+    #     3d:be:50:1d:34:5d:26:90:c3:27:de:80:92:ca:c6:
+    #     55:ba:dd:a3:97:b8:eb:8f:8b:c2:2c:9d:ab:f6:15:
+    #     cf:bd:be:eb:a4:ea:ac:9c:da:e4:a6:b7:bc:6b:e2:
+    #     b7:9e:27:3b:08:b7:91:c3:b8:8f:69:56:e5:a1:ce:
+    #     66:d5:8c:2f:d6:26:35:f8:e1
+
+fi

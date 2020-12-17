@@ -1,0 +1,63 @@
+All questions rely on the network setup given to you in lecture.
+See Diagrams.* in this directory. 
+
+------------------------------------------------------------------------------------
+q2: [1 Marks]
+Place Kali on the 10.10.10.* network
+Run firewallPermissive on FC4 and then 
+run nmap to list open ports and versions on 10.10.10.10.
+------------------------------------------------------------------------------------
+
+	YOUR SCAN GOES HERE, SHOULD SHOW 10.10.10.10
+
+============================================================================================
+
+	>>> nmap 10.10.10.10
+
+	Starting Nmap 7.80 ( https://nmap.org ) at 2020-12-05 19:24 EST
+	Nmap scan report for 10.10.10.10
+	Host is up (0.00022s latency).
+	Not shown: 996 closed ports
+	PORT      STATE SERVICE
+	22/tcp    open  ssh
+	111/tcp   open  rpcbind
+	631/tcp   open  ipp
+	32769/tcp open  filenet-rpc
+	MAC Address: 00:0C:29:FC:33:61 (VMware)
+
+	Nmap done: 1 IP address (1 host up) scanned in 13.23 seconds
+
+============================================================================================
+
+	>>> nmap -sT -sV -p- 10.10.10.10
+
+	Starting Nmap 7.80 ( https://nmap.org ) at 2020-12-05 19:25 EST
+	Nmap scan report for 10.10.10.10
+	Host is up (0.0017s latency).
+	Not shown: 65531 closed ports
+	PORT      STATE SERVICE VERSION
+	22/tcp    open  ssh     OpenSSH 4.0 (protocol 2.0)
+	111/tcp   open  rpcbind 2 (RPC #100000)
+	631/tcp   open  ipp     CUPS 1.1
+	32769/tcp open  status  1 (RPC #100024)
+	MAC Address: 00:0C:29:FC:33:61 (VMware)
+
+	Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+	Nmap done: 1 IP address (1 host up) scanned in 21.41 seconds
+
+============================================================================================
+
+	>>> nmap -sU -sV --top-ports 100 10.10.10.10
+
+	Starting Nmap 7.80 ( https://nmap.org ) at 2020-12-05 19:26 EST
+	Nmap scan report for 10.10.10.10
+	Host is up (0.00026s latency).
+	Not shown: 52 closed ports, 46 open|filtered ports
+	PORT      STATE SERVICE VERSION
+	111/udp   open  rpcbind 2 (RPC #100000)
+	32768/udp open  status  1 (RPC #100024)
+	MAC Address: 00:0C:29:FC:33:61 (VMware)
+
+	Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+	Nmap done: 1 IP address (1 host up) scanned in 268.71 seconds
+

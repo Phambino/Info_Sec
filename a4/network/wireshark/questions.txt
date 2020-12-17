@@ -1,0 +1,46 @@
+[4 Marks]
+I used wireshark to sniff a bit of traffic on my network. 
+Load wiresharkCapture in wireshark on Kali.
+
+Report everything you know about my network and its systems.
+
+	Name				IP Address			Brand					MAC Address
+
+	PcsCompu			192.168.1.130								08:00:27:37:5b:43
+	Router				192.168..1.1		Cisco Brand				00:21:29:a5:a2:2b
+	Printer				192.168.138			Canon-iP4200			00:12:3f:9f:f3:b0
+	Printer				192.168.138			Canon-MF4100-Series		00:12:3f:9f:f3:b0
+	IntelCor_ce														00:13:02:ce:32:c5
+
+2	0.100059	192.168.1.138	192.168.1.255	CUPS	222	ipp://192.168.1.138:631/printers/Canon-iP4200 (idle)
+	- Canon-iP4200 printer
+
+4	1.124553	192.168.1.138	192.168.1.255	CUPS	220	ipp://192.168.1.138:631/printers/Canon-MF4100-Series (idle)
+	- Canon-MF4100-Series printer
+
+5	1.735379	192.168.1.1	239.255.255.250	SSDP	317	NOTIFY * HTTP/1.1 
+	- Universal Plug and Play
+
+23	13.107738	192.168.1.130	192.168.1.1	DNS	78	Standard query 0xcd44 A www.cs.toronto.edu
+24	13.115830	192.168.1.1	192.168.1.130	DNS	129	Standard query response 0xcd44 A www.cs.toronto.edu CNAME colony.cs.toronto.edu A 128.100.3.30
+25	13.122512	192.168.1.130	128.100.3.30	TCP	74	53284 → 80 [SYN] Seq=0 Win=5840 Len=0 MSS=1460 SACK_PERM=1 TSval=1134819 TSecr=0 WS=32
+	- Connected the PcsCompu to www.cs.toronto.edu
+
+28	13.160208	192.168.1.130	128.100.3.30	HTTP	492	GET /~arnold/347/11f/assignments/03/special/ HTTP/1.1 
+29	13.189345	128.100.3.30	192.168.1.130	TCP	66	80 → 53284 [ACK] Seq=1 Ack=427 Win=6912 Len=0 TSval=1708876754 TSecr=1134828
+30	13.200831	128.100.3.30	192.168.1.130	HTTP	742	HTTP/1.1 401 Authorization Required  (text/html)
+	- Attempts to login but fails
+
+43	27.473838	192.168.1.130	128.100.3.30	HTTP	543	GET /~arnold/347/11f/assignments/03/special/ HTTP/1.1
+44	27.521855	128.100.3.30	192.168.1.130	HTTP	741	HTTP/1.1 401 Authorization Required  (text/html)
+45	27.529692	192.168.1.130	128.100.3.30	TCP	66	53284 → 80 [ACK] Seq=904 Ack=1352 Win=8544 Len=0 TSval=1138424 TSecr=1708880337
+	- Second attempt at login but also fails
+
+69	37.290904	192.168.1.130	128.100.3.30	HTTP	551	GET /~arnold/347/11f/assignments/03/special/ HTTP/1.1
+70	37.326763	128.100.3.30	192.168.1.130	HTTP	483	HTTP/1.1 200 OK  (text/html) 
+71	37.336005	192.168.1.130	128.100.3.30	TCP	66	53284 → 80 [ACK] Seq=1389 Ack=1769 Win=9920 Len=0 TSval=1140875 TSecr=1708882789
+	- Successful login
+
+Riddle: Whats the question?  Whats the answer? 
+
+	Whats Fast? Fast smokin' tuna fish

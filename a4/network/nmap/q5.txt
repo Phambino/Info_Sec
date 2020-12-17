@@ -1,0 +1,20 @@
+All questions rely on the network setup given to you in lecture.
+See Diagrams.* in this directory. 
+
+------------------------------------------------------------------------------------
+q5: [2 Marks]
+Place Kali on the NAT network (so you can get out to the internet).
+nmap was good enough to show you the version of apache and php running on 
+Ubuntu804_owasp. Go to cvedetails and find a long list of potential
+vulnerabilities for the version of apache and the version of php on Ubuntu804_owasp.
+Place links to your search results below...
+------------------------------------------------------------------------------------
+
+https://www.cvedetails.com/vulnerability-list/vendor_id-45/product_id-66/version_id-77221/Apache-Http-Server-2.2.8.html
+# You should see Apache>>Http Server>>VERSION:Security Vulnerabilities at the top of the page
+# 35
+
+
+https://www.cvedetails.com/vulnerability-list/vendor_id-74/product_id-128/version_id-47471/PHP-PHP-5.2.4.html
+# You should see PHP>>PHP>>VERSION:Security Vulnerabilities at the top of the page
+# 135

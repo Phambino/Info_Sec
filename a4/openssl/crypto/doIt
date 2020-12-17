@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# GRAB bigbad CERTIFICATE FROM THE WEB (SEE: bigbadcert.pem)
+# PLACE IT IN THIS DIRECTORY
+
+
+openssl x509 -in bigbadcert.pem -noout -text
+# DOCUMENT ITS OUTPUT, DESCRIBE THE IMPORTANT PARTS OF bigbad x509 certificate
+# 
+# Certificate:
+#     Data:
+#         Version: 3 (0x2)
+#         Serial Number: 4096 (0x1000)
+#         Signature Algorithm: sha1WithRSAEncryption
+#         Issuer: C = CA, ST = Ontario, L = Mississauga, O = UofT Mississauga, OU = MCS, CN = arnoldsCA, emailAddress = arnold@cs.toronto.edu
+#         Validity
+#             Not Before: Nov 23 18:43:10 2020 GMT
+#             Not After : Nov 23 18:43:10 2021 GMT
+#         Subject: C = CA, ST = Ontario, L = Toronto, O = Three Little Pigs Inc., OU = web technologies, CN = wolf.bigbad.com, emailAddress = professor@bigbad.com
+#         Subject Public Key Info:
+#             Public Key Algorithm: rsaEncryption
+#                 RSA Public-Key: (1024 bit)
+#                 Modulus:
+#                     00:ba:36:d4:68:29:be:f5:a2:95:b0:10:03:31:76:
+#                     6a:a5:83:93:d3:c8:1f:9e:7c:20:d0:b6:26:62:2a:
+#                     90:82:53:58:c5:65:aa:44:ba:d1:af:38:61:b8:a1:
+#                     f9:b6:25:df:95:20:19:18:f7:b8:27:e2:0e:a0:66:
+#                     5d:17:da:8b:5b:fa:1e:a0:cc:b3:bd:b6:2f:9d:0d:
+#                     f6:10:b2:a7:57:3c:50:20:e9:71:3a:b3:a4:d5:02:
+#                     09:5a:a7:5a:fd:85:8f:e3:f0:20:8e:57:09:42:bb:
+#                     dd:00:19:6a:d4:0a:bd:bb:bd:e2:77:98:c0:4c:0f:
+#                     53:9c:b0:06:19:48:5c:37:0f
+#                 Exponent: 65537 (0x10001)
+#         X509v3 extensions:
+#             X509v3 Basic Constraints: 
+#                 CA:FALSE
+#             Netscape Comment: 
+#                 OpenSSL Generated Certificate
+#             X509v3 Subject Key Identifier: 
+#                 8C:27:85:51:C9:1E:0C:A0:53:29:9D:44:3E:E5:44:F0:47:4A:92:3D
+#             X509v3 Authority Key Identifier: 
+#                 keyid:B9:7D:4A:DF:32:3F:E1:29:6A:3C:60:EA:9F:54:19:06:A3:A1:15:28
+
+#     Signature Algorithm: sha1WithRSAEncryption
+#          2b:13:27:ea:88:a2:ff:87:d7:cf:db:ab:45:7a:39:59:ea:bc:
+#          a2:f4:4e:1b:63:f4:92:1d:0b:71:54:d0:93:ce:2f:8d:ca:78:
+#          5e:74:7d:e7:3a:ed:14:aa:47:51:07:10:8e:8a:f5:9b:4b:16:
+#          2a:fb:b5:20:e5:7f:01:29:61:11:b8:4f:69:09:17:ef:08:59:
+#          75:ee:5e:1b:f9:0f:c4:9e:9c:f1:00:7d:d2:a5:af:df:eb:a9:
+#          cc:7c:ba:22:2f:26:0a:4a:c8:a9:55:a2:c2:10:07:27:ed:ee:
+#          61:81:cb:59:c8:e5:a4:0f:68:40:58:0d:9e:2a:37:eb:d1:03:
+#          95:61
+
+# IMPORTANT PARTS:
+# Issuer: C = CA, ST = Ontario, L = Mississauga, O = UofT Mississauga, OU = MCS, CN = arnoldsCA, emailAddress = arnold@cs.toronto.edu
+# X509v3 Basic Constraints: 
+#       CA:FALSE
+# Modulus:
+#     00:ba:36:d4:68:29:be:f5:a2:95:b0:10:03:31:76:
+#     6a:a5:83:93:d3:c8:1f:9e:7c:20:d0:b6:26:62:2a:
+#     90:82:53:58:c5:65:aa:44:ba:d1:af:38:61:b8:a1:
+#     f9:b6:25:df:95:20:19:18:f7:b8:27:e2:0e:a0:66:
+#     5d:17:da:8b:5b:fa:1e:a0:cc:b3:bd:b6:2f:9d:0d:
+#     f6:10:b2:a7:57:3c:50:20:e9:71:3a:b3:a4:d5:02:
+#     09:5a:a7:5a:fd:85:8f:e3:f0:20:8e:57:09:42:bb:
+#     dd:00:19:6a:d4:0a:bd:bb:bd:e2:77:98:c0:4c:0f:
+#     53:9c:b0:06:19:48:5c:37:0f
+# Exponent: 65537 (0x10001)
+
+# 
+# Is bigbadcert.pem self signed? If not, who signed it? How would you verify 
+# that it was correctly signed? 
+# 
+# bigbadcert is not self-signed.
+# This cert is signed by arnoldsCA. 
+# The way to verify if this is signed is by using the an already trusted certificate like arnoldscert.pem and verify using 
+# openssl verify -verbose -CAfile arnoldscert.pem bigbagcert.pem
+# 
+
+# Is bigbadcert.pem a Certificate Authority?
+# 
+# NO because CA:FALSE
+# 
+
+openssl x509 -in bigbadcert.pem -pubkey -noout > pubkey.pem
+# What does the above do?
+# 
+# From bigbadcert.pem, it takes the public key from it and writes it into a file pubkey.pem
+# 
+
+# In what follows, you use pubkey.pem encrypt and send publicfile.short to bigbad
+
+openssl pkeyutl -encrypt -pubin -in publicfile.short -out privatefile.short -inkey pubkey.pem  -keyform PEM
+# What does the above do?
+# 
+# Encrypts the publicfile.short using RSA from the pubkey.pem and outputs the encrypted file as privatefile.short
+# 
+# If you had bigbad private key, you could decrypt the privatefile.short using...
+# openssl pkeyutl -decrypt -in privatefile.short -out publicfile.short2 -inkey key.pem -keyform PEM
+
+
+# In what follows, you use pubkey.pem encrypt and send publicfile.long to bigbad
+
+openssl pkeyutl -encrypt -pubin -in publicfile.long -out privatefile.long -inkey pubkey.pem  -keyform PEM
+# What does the above do?
+# 
+# Same as above for the publicfile.short encryption but uses a long file instead
+# 
+# EXPLAIN THE ERROR MESSAGE (See the definition of RSA in the lecture notes)
+# 
+# Public Key operation error
+# 139783145932032:error:0406D06E:rsa routines:RSA_padding_add_PKCS1_type_2:data too large for key size:../crypto/rsa/rsa_pk1.c:124:
+# 
+# The data in the publicfile.long goes over the limit of what the key size for the RSA encryption has to offer
+# Therefore it gives us an error message specifying "data too large for key size" because an RSA key has a max of
+# 2048 bits encrypt.
+
+# It seems that we can only use RSA on short messages, so encrypt a short session key and then
+# use that with AES to encrypt publicfile.long
+# produce sessionKey AND privatefile.long in this directory
+# 
+# YOUR ANSWER GOES HERE (all openssl commands to accomplish the job)
+# >>> openssl rand -base64 -out key.bin
+# >>> openssl enc -aes-256-cbc -salt -in publicfile.long -out privatefile.long
+# Input a password for the encryption
+# >>> openssl rsautl -encrypt -inkey pubkey.pem -pubin -in key.bin -out key.bin.enc
+
+# Complete the following: 
+# If you had bigbad private key, you could decrypt the sessionKey using ...
+# 
+# >>> openssl rsautl -decrypt -inkey privatekey.pem -in key.bin.enc -out key.bin
+# 
+# and then decrypt privatefile.long using ...
+# 
+# >>> openssl enc -d -aes-256-cbc -in privatefile.long -out publicfile.long
+# 
+
